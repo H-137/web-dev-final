@@ -1,27 +1,35 @@
-"use client";
-
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "ol/ol.css";
 import { Map, View } from "ol";
 import TileLayer from "ol/layer/Tile";
 import XYZ from "ol/source/XYZ";
-import { fromLonLat } from "ol/proj";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import Feature from "ol/Feature";
 import Point from "ol/geom/Point";
 import Style from "ol/style/Style";
 import Icon from "ol/style/Icon";
-import Select from "ol/interaction/Select";
-import { click } from "ol/events/condition";
 
 const OpenLayersMap = () => {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const vectorLayerRef = useRef(null);
+  const [locationsData, setLocationsData] = useState(null); // State to store the data
 
   useEffect(() => {
-    if (!mapRef.current || mapInstance.current) return;
+    // Fetch the JSON data from the public folder
+    fetch("/locations.json")
+      .then((response) => response.json())
+      .then((data) => {
+        setLocationsData(data); // Store data in the state
+      })
+      .catch((error) => {
+        console.error("Error loading locations data:", error);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!mapRef.current || mapInstance.current || !locationsData) return;
 
     // Define the map
     mapInstance.current = new Map({
@@ -39,41 +47,38 @@ const OpenLayersMap = () => {
       }),
     });
 
-    // List of points (lon, lat in EPSG:3857)
-    const points = [
-      [-7922674.95, 5211429.20], // O'Neill Library
-      [-7922600.00, 5211350.00], // Gasson Hall
-      [-7922750.00, 5211500.00], // Stokes Hall
-    ];
-
     // Define styles
     const styles = {
       active: new Style({
         image: new Icon({
           anchor: [0.5, 1],
           src: "/marker_red.svg", // Active marker
-          scale: 0.1,
+          scale: 0.06,
         }),
       }),
       inactive: new Style({
         image: new Icon({
           anchor: [0.5, 1],
           src: "/marker.svg", // Inactive marker
-          scale: 0.1,
+          scale: 0.05,
         }),
       }),
     };
 
-    // Create vector source and features
+    // Create vector source
     const vectorSource = new VectorSource();
-    
-    points.forEach((coords, index) => {
+
+    // Loop through the locations and create features
+    locationsData.locations.forEach((location) => {
       const feature = new Feature({
-        geometry: new Point(coords),
+        geometry: new Point(location.coordinates),
         active: false, // Default state
+        name: location.name,
+        description: location.description,
+        otherData: location.otherData,
       });
 
-      feature.setId(index); // Assign an ID for reference
+      feature.setId(location.id); // Assign an ID for reference
       feature.setStyle(styles.inactive); // Start as inactive
       vectorSource.addFeature(feature);
     });
@@ -87,36 +92,41 @@ const OpenLayersMap = () => {
     // Add layer to the map
     mapInstance.current.addLayer(vectorLayer);
 
-    // Click handler to toggle active/inactive state
-    const toggleFeatureState = (feature) => {
-      if (!feature) return;
+    // Add click listener on the map
+    mapInstance.current.on("click", (event) => {
+      // Check if a feature was clicked
+      const feature = mapInstance.current.forEachFeatureAtPixel(event.pixel, (feat) => {
+        return feat;
+      });
 
-      // Toggle active state
-      const isActive = feature.get("active");
-      feature.set("active", !isActive);
+      // If a feature was clicked
+      if (feature) {
+        // Deactivate all features except the clicked one
+        vectorSource.getFeatures().forEach((f) => {
+          if (f !== feature) {
+            f.set("active", false);
+            f.setStyle(styles.inactive);
+          }
+        });
 
-      // Update style based on state
-      feature.setStyle(isActive ? styles.inactive : styles.active);
-    };
+        // Toggle the clicked feature's active state
+        const isActive = feature.get("active");
+        feature.set("active", !isActive);
+        feature.setStyle(isActive ? styles.inactive : styles.active);
 
-    // Add select interaction
-    const select = new Select({
-      condition: click,
-      layers: [vectorLayer],
-    });
-
-    select.on("select", (e) => {
-      if (e.selected.length > 0) {
-        toggleFeatureState(e.selected[0]);
+        // Optional: Show additional information
+        console.log("Feature clicked:", feature.get("name"));
+        console.log("Description:", feature.get("description"));
+        console.log("Other Data:", feature.get("otherData"));
+      } else {
+        console.log("Clicked on background");
       }
     });
-
-    mapInstance.current.addInteraction(select);
 
     return () => {
       mapInstance.current.setTarget(null);
     };
-  }, []);
+  }, [locationsData]);
 
   return <div ref={mapRef} className="absolute top-0 left-0 w-full h-full" />;
 };
