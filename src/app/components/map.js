@@ -125,8 +125,6 @@ const OpenLayersMap = () => {
         } else {
           setShowSidebar(false);
         }
-      } else {
-        setShowSidebar(false);
       }
     });
 

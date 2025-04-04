@@ -9,15 +9,14 @@ const Sidebar = ({ studySpace, onClose }) => {
 
 
  return (
-   <div className="fixed top-0 right-0 h-full w-96 bg-white shadow-lg p-6 overflow-y-auto">
-     {/* Close button */}
-     <button onClick={onClose} className="text-gray-600 text-2xl float-right">
-       ✖
-     </button>
-
-
-     {/* Study Space Name */}
-     <h2 className="text-2xl font-bold mb-2">{studySpace.name}</h2>
+  <div className="fixed top-0 right-0 w-1/3 bg-white p-6 rounded-l-lg shadow-lg overflow-y-auto z-10 m-5 text-black">
+    <div className="flex justify-between items-center mb-0"> 
+      <h2 className="text-2xl font-bold mb-0">{studySpace.name}</h2>
+      <button onClick={onClose} className="text-gray-600 text-2xl float-right">
+        ✖
+      </button>
+    </div>
+     
 
 
      {/* Study Space Image */}
