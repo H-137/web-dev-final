@@ -23,7 +23,8 @@ const OpenLayersMap = () => {
   const [selectedSpace, setSelectedSpace] = useState(null);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showFilters, setShowFilters] = useState(false); //  Controls filter panel visibility
-  const [filters, setFilters] = useState({               //  Stores filter state
+  const [filters, setFilters] = useState({
+    //  Stores filter state
     minRating: 0,
     amenities: [],
   });
@@ -51,14 +52,42 @@ const OpenLayersMap = () => {
           }),
         }),
         new VectorLayer({
-          source: vectorSourceRef.current, //  Uses centralized source
+          source: vectorSourceRef.current, // Uses centralized source
         }),
       ],
       view: new View({
         center: [-7922441.18, 5211368.96],
         zoom: 16,
       }),
+      controls: [], // Disables all default controls, including zoom
     });
+
+    const zoomInButton = document.createElement("button");
+    zoomInButton.innerHTML = "+";
+    zoomInButton.className = "custom-zoom-in absolute top-18 left-4";
+
+    const zoomOutButton = document.createElement("button");
+    zoomOutButton.innerHTML = "−";
+    zoomOutButton.className = "custom-zoom-out absolute top-30 left-4";
+
+    zoomInButton.addEventListener("click", () => {
+      const view = mapInstance.current.getView();
+      view.setZoom(view.getZoom() + 1);
+    });
+
+    zoomOutButton.addEventListener("click", () => {
+      const view = mapInstance.current.getView();
+      view.setZoom(view.getZoom() - 1);
+    });
+
+    // Add buttons to a container
+    const zoomControlsContainer = document.createElement("div");
+    zoomControlsContainer.className = "custom-zoom-controls";
+    zoomControlsContainer.appendChild(zoomInButton);
+    zoomControlsContainer.appendChild(zoomOutButton);
+
+    // Append to map container
+    mapRef.current.appendChild(zoomControlsContainer);
 
     vectorLayerRef.current = mapInstance.current.getLayers().getArray()[1]; //  Stores vector layer reference
 
@@ -176,13 +205,15 @@ const OpenLayersMap = () => {
         className="absolute top-4 left-4 bg-white p-3 rounded-lg shadow-lg z-10 hover:bg-gray-100 transition-colors"
         aria-label="Toggle filters"
       >
-        {showFilters ? <FaTimes size={20} /> : <FaFilter size={20} />}
+        {showFilters ? (
+          <FaTimes size={20} className="text-black" />
+        ) : (
+          <FaFilter size={20} className="text-black" />
+        )}
       </button>
 
       {/*  Conditional Filter Panel Display */}
-      {showFilters && (
-        <FilterPanel filters={filters} setFilters={setFilters} />
-      )}
+      {showFilters && <FilterPanel filters={filters} setFilters={setFilters} />}
 
       {showSidebar && (
         <Sidebar studySpace={selectedSpace} onClose={handleCloseSidebar} />
