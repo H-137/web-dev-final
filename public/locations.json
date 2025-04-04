@@ -1,29 +1,55 @@
 {
-    "locations": [
-      {
-        "id": 0,
-        "name": "O'Neill Library",
-        "coordinates": [-7922674.95, 5211429.20],
-        "status": "inactive",
-        "description": "A prominent library at Boston College.",
-        "otherData": "Additional info about O'Neill Library."
-      },
-      {
-        "id": 1,
-        "name": "Gasson Hall",
-        "coordinates": [-7922600.00, 5211350.00],
-        "status": "inactive",
-        "description": "Famous academic building.",
-        "otherData": "Additional info about Gasson Hall."
-      },
-      {
-        "id": 2,
-        "name": "Stokes Hall",
-        "coordinates": [-7922750.00, 5211500.00],
-        "status": "inactive",
-        "description": "Another important academic hall.",
-        "otherData": "Additional info about Stokes Hall."
-      }
-    ]
-  }
-  
+  "locations": [
+    {
+      "id": 0,
+      "name": "O'Neill Library",
+      "coordinates": [-7922674.95, 5211429.20],
+      "status": "inactive",
+      "description": "A prominent library at Boston College.",
+      "otherData": "Additional info about O'Neill Library.",
+      "location": "Boston College",
+      "image": "",
+      "amenities": [
+        { "name": "WiFi", "rating": 5 },
+        { "name": "Quiet Zone", "rating": 4 },
+        { "name": "Study Rooms", "rating": 5 }
+      ],
+      "featuredReview": "A great place to focus! Quiet and well-equipped.",
+      "generalRating": 85
+    },
+    {
+      "id": 1,
+      "name": "Gasson Hall",
+      "coordinates": [-7922600.00, 5211350.00],
+      "status": "inactive",
+      "description": "Famous academic building.",
+      "otherData": "Additional info about Gasson Hall.",
+      "location": "Boston College",
+      "image": "",
+      "amenities": [
+        { "name": "Projector" },
+        { "name": "Classrooms" },
+        { "name": "Historical Site" }
+      ],
+      "featuredReview": "The atmosphere is inspiring, and it's perfect for group work.",
+      "generalRating": 90
+    },
+    {
+      "id": 2,
+      "name": "Stokes Hall",
+      "coordinates": [-7922750.00, 5211500.00],
+      "status": "inactive",
+      "description": "Another important academic hall.",
+      "otherData": "Additional info about Stokes Hall.",
+      "location": "Boston College",
+      "image": "",
+      "amenities": [
+        { "name": "Conference Rooms" },
+        { "name": "Cafeteria Nearby" },
+        { "name": "Whiteboards" }
+      ],
+      "featuredReview": "A modern study space with all the essentials!",
+      "generalRating": 80
+    }
+  ]
+}
