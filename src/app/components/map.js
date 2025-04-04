@@ -10,11 +10,15 @@ import Point from "ol/geom/Point";
 import Style from "ol/style/Style";
 import Icon from "ol/style/Icon";
 
+// Import MapOverlay component
+import MapOverlay from "./overlay";
+
 const OpenLayersMap = () => {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const vectorLayerRef = useRef(null);
   const [locationsData, setLocationsData] = useState(null); // State to store the data
+  const [selectedFeature, setSelectedFeature] = useState(null); // State for selected feature
 
   useEffect(() => {
     // Fetch the JSON data from the public folder
@@ -114,13 +118,13 @@ const OpenLayersMap = () => {
         feature.set("active", !isActive);
         feature.setStyle(isActive ? styles.inactive : styles.active);
 
-        // Optional: Show additional information
-        console.log("Feature clicked:", feature.get("name"));
-        console.log("Description:", feature.get("description"));
-        console.log("Other Data:", feature.get("otherData"));
-      } else {
-        console.log("Clicked on background");
-      }
+        // Update the overlay with the clicked feature's information
+        setSelectedFeature({
+          name: feature.get("name"),
+          description: feature.get("description"),
+          otherData: feature.get("otherData"),
+        });
+      } 
     });
 
     return () => {
@@ -128,7 +132,17 @@ const OpenLayersMap = () => {
     };
   }, [locationsData]);
 
-  return <div ref={mapRef} className="absolute top-0 left-0 w-full h-full" />;
+  const handleCloseOverlay = () => {
+    setSelectedFeature(null); // Close the overlay by clearing selected feature
+  };
+
+  return (
+    <>
+      <div ref={mapRef} className="absolute top-0 left-0 w-full h-full" />
+      {/* Render the overlay if a feature is selected */}
+      <MapOverlay featureData={selectedFeature} onClose={handleCloseOverlay} />
+    </>
+  );
 };
 
 export default OpenLayersMap;
