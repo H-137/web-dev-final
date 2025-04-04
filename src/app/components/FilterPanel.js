@@ -2,21 +2,27 @@ import React from "react";
 
 const FilterPanel = ({ filters, setFilters }) => {
   const amenitiesList = [
-    "WiFi", "Quiet Zone", "Study Rooms", "Projector", 
-    "Classrooms", "Historical Site", "Conference Rooms", 
-    "Cafeteria Nearby", "Whiteboards"
+    "WiFi",
+    "Quiet Zone",
+    "Study Rooms",
+    "Projector",
+    "Classrooms",
+    "Historical Site",
+    "Conference Rooms",
+    "Cafeteria Nearby",
+    "Whiteboards",
   ];
 
   const handleAmenityToggle = (amenity) => {
     const updatedAmenities = filters.amenities.includes(amenity)
       ? filters.amenities.filter((a) => a !== amenity)
       : [...filters.amenities, amenity];
-    
+
     setFilters({ ...filters, amenities: updatedAmenities });
   };
 
   return (
-    <div className="absolute top-4 left-16 bg-white p-4 rounded-lg shadow-lg z-10 w-64">
+    <div className="absolute top-4 left-16 bg-white p-4 rounded-lg shadow-lg z-10 w-64 text-black">
       <h2 className="text-lg font-bold mb-4">Filter Study Spaces</h2>
 
       <div className="mb-4">
@@ -31,7 +37,23 @@ const FilterPanel = ({ filters, setFilters }) => {
           onChange={(e) =>
             setFilters({ ...filters, minRating: parseInt(e.target.value) })
           }
-          className="w-full"
+          className="
+            w-full h-2 rounded-lg 
+            appearance-none bg-gray-300 
+            cursor-pointer transition-all 
+            accent-blue-500
+            [&::-webkit-slider-thumb]:appearance-none 
+            [&::-webkit-slider-thumb]:w-4 
+            [&::-webkit-slider-thumb]:h-4 
+            [&::-webkit-slider-thumb]:bg-[#98002E] 
+            [&::-webkit-slider-thumb]:rounded-full 
+            [&::-webkit-slider-thumb]:cursor-pointer
+            [&::-moz-range-thumb]:w-4 
+            [&::-moz-range-thumb]:h-4 
+            [&::-moz-range-thumb]:bg-blue-500 
+            [&::-moz-range-thumb]:rounded-full 
+            [&::-moz-range-thumb]:cursor-pointer
+          "
         />
       </div>
 

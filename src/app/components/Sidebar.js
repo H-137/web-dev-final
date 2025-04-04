@@ -1,4 +1,5 @@
 import React from "react";
+import { FaTimes } from "react-icons/fa"; // Importing the close icon
 
 const Sidebar = ({ studySpace, onClose }) => {
   // Ensure studySpace exists before rendering
@@ -11,9 +12,9 @@ const Sidebar = ({ studySpace, onClose }) => {
         <h2 className="text-4xl font-bold mb-0">{studySpace.name}</h2>
         <button
           onClick={onClose}
-          className="text-gray-600 text-2xl float-right hover:text-gray-800 transition duration-200 ease-in-out"
+          className="text-gray-600 float-right hover:bg-gray-200 transition duration-200 ease-in-out mb-1 p-1 rounded-md"
         >
-          ✖
+          <FaTimes size={20} className="text-black" />
         </button>
       </div>
 

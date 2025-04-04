@@ -12,6 +12,8 @@ import Icon from "ol/style/Icon";
 import Sidebar from "./Sidebar";
 import FilterPanel from "./FilterPanel"; //  Added new component for filters
 import { FaFilter, FaTimes } from "react-icons/fa"; //  New icons for toggling filter UI
+import ZoomControls from "./Zoom";
+
 
 const OpenLayersMap = () => {
   const mapRef = useRef(null);
@@ -62,32 +64,8 @@ const OpenLayersMap = () => {
       controls: [], // Disables all default controls, including zoom
     });
 
-    const zoomInButton = document.createElement("button");
-    zoomInButton.innerHTML = "+";
-    zoomInButton.className = "custom-zoom-in absolute top-18 left-4";
-
-    const zoomOutButton = document.createElement("button");
-    zoomOutButton.innerHTML = "−";
-    zoomOutButton.className = "custom-zoom-out absolute top-30 left-4";
-
-    zoomInButton.addEventListener("click", () => {
-      const view = mapInstance.current.getView();
-      view.setZoom(view.getZoom() + 1);
-    });
-
-    zoomOutButton.addEventListener("click", () => {
-      const view = mapInstance.current.getView();
-      view.setZoom(view.getZoom() - 1);
-    });
-
-    // Add buttons to a container
-    const zoomControlsContainer = document.createElement("div");
-    zoomControlsContainer.className = "custom-zoom-controls";
-    zoomControlsContainer.appendChild(zoomInButton);
-    zoomControlsContainer.appendChild(zoomOutButton);
-
     // Append to map container
-    mapRef.current.appendChild(zoomControlsContainer);
+    
 
     vectorLayerRef.current = mapInstance.current.getLayers().getArray()[1]; //  Stores vector layer reference
 
@@ -198,7 +176,7 @@ const OpenLayersMap = () => {
   return (
     <>
       <div ref={mapRef} className="absolute top-0 left-0 w-full h-full" />
-
+      <ZoomControls mapInstance={mapInstance} />
       {/*  Filter Toggle Button */}
       <button
         onClick={() => setShowFilters(!showFilters)}
