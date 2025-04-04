@@ -10,36 +10,27 @@ import Point from "ol/geom/Point";
 import Style from "ol/style/Style";
 import Icon from "ol/style/Icon";
 import Sidebar from "./Sidebar";
-import FilterPanel from "./FilterPanel"; //  Added new component for filters
-import { FaFilter, FaTimes } from "react-icons/fa"; //  New icons for toggling filter UI
+import FilterPanel from "./FilterPanel";
+import { FaFilter, FaTimes } from "react-icons/fa";
 import ZoomControls from "./Zoom";
-
 
 const OpenLayersMap = () => {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
-  const vectorLayerRef = useRef(null);
-  const vectorSourceRef = useRef(new VectorSource()); //  Centralized vector source via ref
+  const vectorSourceRef = useRef(new VectorSource());
 
   const [locationsData, setLocationsData] = useState(null);
   const [selectedSpace, setSelectedSpace] = useState(null);
   const [showSidebar, setShowSidebar] = useState(false);
-  const [showFilters, setShowFilters] = useState(false); //  Controls filter panel visibility
-  const [filters, setFilters] = useState({
-    //  Stores filter state
-    minRating: 0,
-    amenities: [],
-  });
+  const [showFilters, setShowFilters] = useState(false);
+  const [activeFeatureId, setActiveFeatureId] = useState(null);
+  const [filters, setFilters] = useState({ minRating: 0, amenities: [] });
 
   useEffect(() => {
     fetch("/locations.json")
       .then((response) => response.json())
-      .then((data) => {
-        setLocationsData(data);
-      })
-      .catch((error) => {
-        console.error("Error loading locations data:", error);
-      });
+      .then((data) => setLocationsData(data))
+      .catch((error) => console.error("Error loading locations data:", error));
   }, []);
 
   useEffect(() => {
@@ -53,21 +44,14 @@ const OpenLayersMap = () => {
             url: "https://{a-d}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
           }),
         }),
-        new VectorLayer({
-          source: vectorSourceRef.current, // Uses centralized source
-        }),
+        new VectorLayer({ source: vectorSourceRef.current }),
       ],
       view: new View({
         center: [-7922441.18, 5211368.96],
         zoom: 16,
       }),
-      controls: [], // Disables all default controls, including zoom
+      controls: [],
     });
-
-    // Append to map container
-    
-
-    vectorLayerRef.current = mapInstance.current.getLayers().getArray()[1]; //  Stores vector layer reference
 
     mapInstance.current.on("click", (event) => {
       const feature = mapInstance.current.forEachFeatureAtPixel(
@@ -79,7 +63,7 @@ const OpenLayersMap = () => {
         vectorSourceRef.current.getFeatures().forEach((f) => {
           if (f !== feature) {
             f.set("active", false);
-            f.setStyle(styles.inactive); //  Reused shared styles
+            f.setStyle(styles.inactive);
           }
         });
 
@@ -88,6 +72,7 @@ const OpenLayersMap = () => {
         feature.setStyle(isActive ? styles.inactive : styles.active);
 
         if (!isActive) {
+          setActiveFeatureId(feature.getId());
           setSelectedSpace({
             name: feature.get("name"),
             description: feature.get("description"),
@@ -98,6 +83,7 @@ const OpenLayersMap = () => {
           });
           setShowSidebar(true);
         } else {
+          setActiveFeatureId(null);
           setShowSidebar(false);
         }
       }
@@ -110,49 +96,35 @@ const OpenLayersMap = () => {
 
   const styles = {
     active: new Style({
-      image: new Icon({
-        anchor: [0.5, 1],
-        src: "/marker_red.svg",
-        scale: 0.06,
-      }),
+      image: new Icon({ anchor: [0.5, 1], src: "/marker_red.svg", scale: 0.06 }),
     }),
     inactive: new Style({
-      image: new Icon({
-        anchor: [0.5, 1],
-        src: "/marker.svg",
-        scale: 0.05,
-      }),
+      image: new Icon({ anchor: [0.5, 1], src: "/marker.svg", scale: 0.05 }),
     }),
   };
 
-  //  This effect filters and adds markers dynamically
   useEffect(() => {
     if (!locationsData) return;
 
-    vectorSourceRef.current.clear(); //  Clears previous features before applying new ones
+    vectorSourceRef.current.clear();
 
-    locationsData.locations
+    const newFeatures = locationsData.locations
       .filter((location) => {
-        //  Filter by minimum rating
         if (location.generalRating < filters.minRating) return false;
-
-        //  Filter by required amenities
         if (filters.amenities.length > 0) {
           const locationAmenities = location.amenities.map((a) => a.name);
           return filters.amenities.every((amenity) =>
             locationAmenities.includes(amenity)
           );
         }
-
         return true;
       })
-      .forEach((location) => {
+      .map((location) => {
         const feature = new Feature({
           geometry: new Point(location.coordinates),
           active: false,
           name: location.name,
           description: location.description,
-          otherData: location.otherData,
           image: location.image,
           generalRating: location.generalRating,
           amenities: location.amenities,
@@ -160,16 +132,32 @@ const OpenLayersMap = () => {
         });
 
         feature.setId(location.id);
-        feature.setStyle(styles.inactive);
-        vectorSourceRef.current.addFeature(feature); //  Uses central vector source
+        feature.setStyle(
+          activeFeatureId === location.id ? styles.active : styles.inactive
+        );
+
+        return feature;
       });
-  }, [locationsData, filters]); //  Re-renders on filter change
+
+    vectorSourceRef.current.addFeatures(newFeatures);
+
+    if (activeFeatureId) {
+      const activeFeature = vectorSourceRef.current.getFeatureById(activeFeatureId);
+      if (activeFeature) {
+        activeFeature.set("active", true);
+        activeFeature.setStyle(styles.active);
+      } else {
+        setActiveFeatureId(null);
+      }
+    }
+  }, [locationsData, filters]);
 
   const handleCloseSidebar = () => {
     setShowSidebar(false);
+    setActiveFeatureId(null);
     vectorSourceRef.current.getFeatures().forEach((f) => {
       f.set("active", false);
-      f.setStyle(styles.inactive); // 🧹 Unified inactive style logic
+      f.setStyle(styles.inactive);
     });
   };
 
@@ -177,25 +165,15 @@ const OpenLayersMap = () => {
     <>
       <div ref={mapRef} className="absolute top-0 left-0 w-full h-full" />
       <ZoomControls mapInstance={mapInstance} />
-      {/*  Filter Toggle Button */}
       <button
         onClick={() => setShowFilters(!showFilters)}
         className="absolute top-4 left-4 bg-white p-3 rounded-lg shadow-lg z-10 hover:bg-gray-100 transition-colors"
         aria-label="Toggle filters"
       >
-        {showFilters ? (
-          <FaTimes size={20} className="text-black" />
-        ) : (
-          <FaFilter size={20} className="text-black" />
-        )}
+        {showFilters ? <FaTimes size={20} className="text-black" /> : <FaFilter size={20} className="text-black" />}
       </button>
-
-      {/*  Conditional Filter Panel Display */}
       {showFilters && <FilterPanel filters={filters} setFilters={setFilters} />}
-
-      {showSidebar && (
-        <Sidebar studySpace={selectedSpace} onClose={handleCloseSidebar} />
-      )}
+      {showSidebar && <Sidebar studySpace={selectedSpace} onClose={handleCloseSidebar} />}
     </>
   );
 };
