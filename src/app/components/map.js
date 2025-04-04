@@ -9,23 +9,21 @@ import Feature from "ol/Feature";
 import Point from "ol/geom/Point";
 import Style from "ol/style/Style";
 import Icon from "ol/style/Icon";
-
-// Import MapOverlay component
-import MapOverlay from "./overlay";
+import Sidebar from "./Sidebar"; // Import the Sidebar component
 
 const OpenLayersMap = () => {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const vectorLayerRef = useRef(null);
-  const [locationsData, setLocationsData] = useState(null); // State to store the data
-  const [selectedFeature, setSelectedFeature] = useState(null); // State for selected feature
+  const [locationsData, setLocationsData] = useState(null);
+  const [selectedSpace, setSelectedSpace] = useState(null); // Track selected study space
+  const [showSidebar, setShowSidebar] = useState(false); // Control sidebar visibility
 
   useEffect(() => {
-    // Fetch the JSON data from the public folder
     fetch("/locations.json")
       .then((response) => response.json())
       .then((data) => {
-        setLocationsData(data); // Store data in the state
+        setLocationsData(data);
       })
       .catch((error) => {
         console.error("Error loading locations data:", error);
@@ -35,7 +33,6 @@ const OpenLayersMap = () => {
   useEffect(() => {
     if (!mapRef.current || mapInstance.current || !locationsData) return;
 
-    // Define the map
     mapInstance.current = new Map({
       target: mapRef.current,
       layers: [
@@ -46,66 +43,62 @@ const OpenLayersMap = () => {
         }),
       ],
       view: new View({
-        center: [-7922441.18, 5211368.96], // Boston College (EPSG:3857)
+        center: [-7922441.18, 5211368.96],
         zoom: 16,
       }),
     });
 
-    // Define styles
     const styles = {
       active: new Style({
         image: new Icon({
           anchor: [0.5, 1],
-          src: "/marker_red.svg", // Active marker
+          src: "/marker_red.svg",
           scale: 0.06,
         }),
       }),
       inactive: new Style({
         image: new Icon({
           anchor: [0.5, 1],
-          src: "/marker.svg", // Inactive marker
+          src: "/marker.svg",
           scale: 0.05,
         }),
       }),
     };
 
-    // Create vector source
     const vectorSource = new VectorSource();
 
-    // Loop through the locations and create features
     locationsData.locations.forEach((location) => {
       const feature = new Feature({
         geometry: new Point(location.coordinates),
-        active: false, // Default state
+        active: false,
         name: location.name,
         description: location.description,
         otherData: location.otherData,
+        // Add all properties needed for the sidebar
+        image: location.image,
+        generalRating: location.generalRating,
+        amenities: location.amenities,
+        featuredReview: location.featuredReview,
       });
 
-      feature.setId(location.id); // Assign an ID for reference
-      feature.setStyle(styles.inactive); // Start as inactive
+      feature.setId(location.id);
+      feature.setStyle(styles.inactive);
       vectorSource.addFeature(feature);
     });
 
-    // Create vector layer
     const vectorLayer = new VectorLayer({
       source: vectorSource,
     });
     vectorLayerRef.current = vectorLayer;
 
-    // Add layer to the map
     mapInstance.current.addLayer(vectorLayer);
 
-    // Add click listener on the map
     mapInstance.current.on("click", (event) => {
-      // Check if a feature was clicked
       const feature = mapInstance.current.forEachFeatureAtPixel(event.pixel, (feat) => {
         return feat;
       });
 
-      // If a feature was clicked
       if (feature) {
-        // Deactivate all features except the clicked one
         vectorSource.getFeatures().forEach((f) => {
           if (f !== feature) {
             f.set("active", false);
@@ -113,18 +106,28 @@ const OpenLayersMap = () => {
           }
         });
 
-        // Toggle the clicked feature's active state
         const isActive = feature.get("active");
         feature.set("active", !isActive);
         feature.setStyle(isActive ? styles.inactive : styles.active);
 
-        // Update the overlay with the clicked feature's information
-        setSelectedFeature({
-          name: feature.get("name"),
-          description: feature.get("description"),
-          otherData: feature.get("otherData"),
-        });
-      } 
+        if (!isActive) {
+          // Show sidebar with the clicked feature's data
+          setSelectedSpace({
+            name: feature.get("name"),
+            description: feature.get("description"),
+            image: feature.get("image"),
+            generalRating: feature.get("generalRating"),
+            amenities: feature.get("amenities"),
+            featuredReview: feature.get("featuredReview"),
+            // Add any other properties you need
+          });
+          setShowSidebar(true);
+        } else {
+          setShowSidebar(false);
+        }
+      } else {
+        setShowSidebar(false);
+      }
     });
 
     return () => {
@@ -132,15 +135,33 @@ const OpenLayersMap = () => {
     };
   }, [locationsData]);
 
-  const handleCloseOverlay = () => {
-    setSelectedFeature(null); // Close the overlay by clearing selected feature
+  const handleCloseSidebar = () => {
+    setShowSidebar(false);
+    // Reset all features to inactive
+    if (vectorLayerRef.current) {
+      const source = vectorLayerRef.current.getSource();
+      source.getFeatures().forEach((f) => {
+        f.set("active", false);
+        f.setStyle(new Style({
+          image: new Icon({
+            anchor: [0.5, 1],
+            src: "/marker.svg",
+            scale: 0.05,
+          }),
+        }));
+      });
+    }
   };
 
   return (
     <>
       <div ref={mapRef} className="absolute top-0 left-0 w-full h-full" />
-      {/* Render the overlay if a feature is selected */}
-      <MapOverlay featureData={selectedFeature} onClose={handleCloseOverlay} />
+      {showSidebar && (
+        <Sidebar 
+          studySpace={selectedSpace} 
+          onClose={handleCloseSidebar} 
+        />
+      )}
     </>
   );
 };
