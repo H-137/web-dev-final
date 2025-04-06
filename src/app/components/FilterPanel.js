@@ -1,46 +1,58 @@
 import React from "react";
+import Select from 'react-select';
 
 const FilterPanel = ({ filters, setFilters }) => {
-  const amenitiesList = [
-    "Water Fountain",
-    "Quiet Zone",
-    "Study Rooms",
-    "Projector",
-    "Classrooms",
-    "Historical Site",
-    "Conference Rooms",
-    "Cafeteria Nearby",
-    "Whiteboards",
+  // Options for each filter category
+  const noiseLevelOptions = [
+    { value: "Silent", label: "Silent" },
+    { value: "Quiet", label: "Quiet" },
+    { value: "Moderate", label: "Moderate" },
+    { value: "Loud", label: "Loud" }
   ];
 
-  const noiseLevels = ["Silent", "Quiet", "Moderate", "Loud"];
-  const seatingOptions = ["Desk Chairs", "Cushioned Chairs", "Couches"];
+  const seatingOptions = [
+    { value: "Desk Chairs", label: "Desk Chairs" },
+    { value: "Cushioned Chairs", label: "Cushioned Chairs" },
+    { value: "Couches", label: "Couches" }
+  ];
 
-  const handleAmenityToggle = (amenity) => {
-    const updatedAmenities = filters.amenities.includes(amenity)
-      ? filters.amenities.filter((a) => a !== amenity)
-      : [...filters.amenities, amenity];
-    setFilters({ ...filters, amenities: updatedAmenities });
+  const amenitiesOptions = [
+    { value: "Water Fountain", label: "Water Fountain" },
+    { value: "Quiet Zone", label: "Quiet Zone" },
+    { value: "Study Rooms", label: "Study Rooms" },
+    { value: "Projector", label: "Projector" },
+    { value: "Classrooms", label: "Classrooms" },
+    { value: "Historical Site", label: "Historical Site" },
+    { value: "Conference Rooms", label: "Conference Rooms" },
+    { value: "Cafeteria Nearby", label: "Cafeteria Nearby" },
+    { value: "Whiteboards", label: "Whiteboards" }
+  ];
+
+  const handleAmenityChange = (amenityValue) => {
+    setFilters(prevFilters => {
+      const newAmenities = prevFilters.amenities.includes(amenityValue)
+        ? prevFilters.amenities.filter(a => a !== amenityValue)
+        : [...prevFilters.amenities, amenityValue];
+      
+      return {
+        ...prevFilters,
+        amenities: newAmenities
+      };
+    });
   };
 
-  const handleNoiseLevelToggle = (level) => {
-    const updatedNoiseLevels = filters.noiseLevels.includes(level)
-      ? filters.noiseLevels.filter((l) => l !== level)
-      : [...filters.noiseLevels, level];
-    setFilters({ ...filters, noiseLevels: updatedNoiseLevels });
-  };
-
-  const handleSeatingToggle = (option) => {
-    const updatedSeating = filters.seating.includes(option)
-      ? filters.seating.filter((s) => s !== option)
-      : [...filters.seating, option];
-    setFilters({ ...filters, seating: updatedSeating });
+  const handleMultiSelectChange = (field, selectedOptions) => {
+    setFilters(prevFilters => ({
+      ...prevFilters,
+      [field]: selectedOptions.map(item => item.value)
+    }));
   };
 
   return (
     <div className="absolute top-4 left-16 bg-white p-4 rounded-lg shadow-lg z-10 w-64 text-black">
       <h2 className="text-lg font-bold mb-4">Filter Study Spaces</h2>
 
+      {/* Rating Slider */}
       <div className="mb-4">
         <label className="block text-sm font-medium mb-1">
           Minimum Rating: {filters.minRating}%
@@ -50,76 +62,59 @@ const FilterPanel = ({ filters, setFilters }) => {
           min="0"
           max="100"
           value={filters.minRating}
-          onChange={(e) =>
-            setFilters({ ...filters, minRating: parseInt(e.target.value) })
-          }
-          className="
-            w-full h-2 rounded-lg 
-            appearance-none bg-gray-300 
-            cursor-pointer transition-all 
-            accent-blue-500
-            [&::-webkit-slider-thumb]:appearance-none 
-            [&::-webkit-slider-thumb]:w-4 
-            [&::-webkit-slider-thumb]:h-4 
-            [&::-webkit-slider-thumb]:bg-[#98002E] 
-            [&::-webkit-slider-thumb]:rounded-full 
-            [&::-webkit-slider-thumb]:cursor-pointer
-            [&::-moz-range-thumb]:w-4 
-            [&::-moz-range-thumb]:h-4 
-            [&::-moz-range-thumb]:bg-blue-500 
-            [&::-moz-range-thumb]:rounded-full 
-            [&::-moz-range-thumb]:cursor-pointer
-          "
+          onChange={(e) => setFilters(prev => ({
+            ...prev,
+            minRating: parseInt(e.target.value)
+          }))}
+          className="w-full h-2 rounded-lg appearance-none bg-gray-300 cursor-pointer accent-[#98002E]"
         />
       </div>
 
+      {/* Noise Level Multiselect */}
       <div className="mb-4">
-        <h3 className="text-sm font-medium mb-2">Noise Level</h3>
-        <div className="space-y-2">
-          {noiseLevels.map((level) => (
-            <label key={level} className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={filters.noiseLevels.includes(level)}
-                onChange={() => handleNoiseLevelToggle(level)}
-                className="rounded text-blue-500"
-              />
-              <span className="text-sm">{level}</span>
-            </label>
-          ))}
-        </div>
+        <label className="block text-sm font-medium mb-1">Noise Level</label>
+        <Select
+          isMulti
+          options={noiseLevelOptions}
+          value={filters.noiseLevels.map(level => ({ value: level, label: level }))}
+          onChange={(selected) => handleMultiSelectChange('noiseLevels', selected)}
+          className="text-sm"
+          classNamePrefix="react-select"
+          placeholder="Select noise levels..."
+        />
       </div>
 
+      {/* Seating Multiselect */}
       <div className="mb-4">
-        <h3 className="text-sm font-medium mb-2">Seating Availability</h3>
-        <div className="space-y-2">
-          {seatingOptions.map((option) => (
-            <label key={option} className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={filters.seating.includes(option)}
-                onChange={() => handleSeatingToggle(option)}
-                className="rounded text-blue-500"
-              />
-              <span className="text-sm capitalize">{option}</span>
-            </label>
-          ))}
-        </div>
+        <label className="block text-sm font-medium mb-1">Seating Type</label>
+        <Select
+          isMulti
+          options={seatingOptions}
+          value={filters.seating.map(seat => ({ value: seat, label: seat }))}
+          onChange={(selected) => handleMultiSelectChange('seating', selected)}
+          className="text-sm"
+          classNamePrefix="react-select"
+          placeholder="Select seating types..."
+        />
       </div>
 
-      <div>
-        <h3 className="text-sm font-medium mb-2">Amenities</h3>
-        <div className="space-y-2">
-          {amenitiesList.map((amenity) => (
-            <label key={amenity} className="flex items-center space-x-2">
+      {/* Amenities Checkboxes */}
+      <div className="mb-2">
+        <label className="block text-sm font-medium mb-1">Amenities</label>
+        <div className="space-y-2 max-h-60 overflow-y-auto">
+          {amenitiesOptions.map((amenity) => (
+            <div key={amenity.value} className="flex items-center">
               <input
                 type="checkbox"
-                checked={filters.amenities.includes(amenity)}
-                onChange={() => handleAmenityToggle(amenity)}
-                className="rounded text-blue-500"
+                id={`amenity-${amenity.value}`}
+                checked={filters.amenities.includes(amenity.value)}
+                onChange={() => handleAmenityChange(amenity.value)}
+                className="h-4 w-4 rounded border-gray-300 text-[#98002E] focus:ring-[#98002E]"
               />
-              <span className="text-sm">{amenity}</span>
-            </label>
+              <label htmlFor={`amenity-${amenity.value}`} className="ml-2 text-sm">
+                {amenity.label}
+              </label>
+            </div>
           ))}
         </div>
       </div>
