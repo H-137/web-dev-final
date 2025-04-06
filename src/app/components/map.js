@@ -117,21 +117,32 @@ const OpenLayersMap = () => {
 
     const newFeatures = locationsData.locations
       .filter((location) => {
+        // Check minimum rating
         if (location.generalRating < filters.minRating) return false;
         
-        if (filters.amenities.length > 0) {
-          const locationAmenities = location.amenities.map((a) => a.name);
-          return filters.amenities.every((amenity) =>
-            locationAmenities.includes(amenity)
-          );
-        }
-        
+        // Check noise levels (if any filters are set)
         if (filters.noiseLevels.length > 0 && !filters.noiseLevels.includes(location.noiseLevel)) {
           return false;
         }
         
-        if (filters.seating.length > 0 && !filters.seating.includes(location.seating)) {
-          return false;
+        // Check seating (if any filters are set)
+        if (filters.seating.length > 0) {
+          // Handle both string (old) and array (new) seating data
+          const locationSeating = Array.isArray(location.seating) 
+            ? location.seating 
+            : [location.seating];
+            
+          if (!filters.seating.some(seat => locationSeating.includes(seat))) {
+            return false;
+          }
+        }
+        
+        // Check amenities (if any filters are set)
+        if (filters.amenities.length > 0) {
+          const locationAmenities = location.amenities.map(a => a.name);
+          if (!filters.amenities.every(amenity => locationAmenities.includes(amenity))) {
+            return false;
+          }
         }
         
         return true;
@@ -169,7 +180,7 @@ const OpenLayersMap = () => {
         setActiveFeatureId(null);
       }
     }
-  }, [locationsData, filters]);
+  }, [locationsData, filters, activeFeatureId]);
 
   const handleCloseSidebar = () => {
     setShowSidebar(false);
