@@ -2,7 +2,7 @@ import React from "react";
 
 const FilterPanel = ({ filters, setFilters }) => {
   const amenitiesList = [
-    "WiFi",
+    "Water Fountain",
     "Quiet Zone",
     "Study Rooms",
     "Projector",
@@ -13,12 +13,28 @@ const FilterPanel = ({ filters, setFilters }) => {
     "Whiteboards",
   ];
 
+  const noiseLevels = ["Silent", "Quiet", "Moderate", "Loud"];
+  const seatingOptions = ["Desk Chairs", "Cushioned Chairs", "Couches"];
+
   const handleAmenityToggle = (amenity) => {
     const updatedAmenities = filters.amenities.includes(amenity)
       ? filters.amenities.filter((a) => a !== amenity)
       : [...filters.amenities, amenity];
-
     setFilters({ ...filters, amenities: updatedAmenities });
+  };
+
+  const handleNoiseLevelToggle = (level) => {
+    const updatedNoiseLevels = filters.noiseLevels.includes(level)
+      ? filters.noiseLevels.filter((l) => l !== level)
+      : [...filters.noiseLevels, level];
+    setFilters({ ...filters, noiseLevels: updatedNoiseLevels });
+  };
+
+  const handleSeatingToggle = (option) => {
+    const updatedSeating = filters.seating.includes(option)
+      ? filters.seating.filter((s) => s !== option)
+      : [...filters.seating, option];
+    setFilters({ ...filters, seating: updatedSeating });
   };
 
   return (
@@ -55,6 +71,40 @@ const FilterPanel = ({ filters, setFilters }) => {
             [&::-moz-range-thumb]:cursor-pointer
           "
         />
+      </div>
+
+      <div className="mb-4">
+        <h3 className="text-sm font-medium mb-2">Noise Level</h3>
+        <div className="space-y-2">
+          {noiseLevels.map((level) => (
+            <label key={level} className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={filters.noiseLevels.includes(level)}
+                onChange={() => handleNoiseLevelToggle(level)}
+                className="rounded text-blue-500"
+              />
+              <span className="text-sm">{level}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <h3 className="text-sm font-medium mb-2">Seating Availability</h3>
+        <div className="space-y-2">
+          {seatingOptions.map((option) => (
+            <label key={option} className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={filters.seating.includes(option)}
+                onChange={() => handleSeatingToggle(option)}
+                className="rounded text-blue-500"
+              />
+              <span className="text-sm capitalize">{option}</span>
+            </label>
+          ))}
+        </div>
       </div>
 
       <div>

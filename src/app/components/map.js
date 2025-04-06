@@ -24,7 +24,12 @@ const OpenLayersMap = () => {
   const [showSidebar, setShowSidebar] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [activeFeatureId, setActiveFeatureId] = useState(null);
-  const [filters, setFilters] = useState({ minRating: 0, amenities: [] });
+  const [filters, setFilters] = useState({ 
+    minRating: 0, 
+    amenities: [],
+    noiseLevels: [],
+    seating: []
+  });
 
   useEffect(() => {
     fetch("/locations.json")
@@ -79,6 +84,8 @@ const OpenLayersMap = () => {
             image: feature.get("image"),
             generalRating: feature.get("generalRating"),
             amenities: feature.get("amenities"),
+            noiseLevel: feature.get("noiseLevel"),
+            seating: feature.get("seating"),
             featuredReview: feature.get("featuredReview"),
           });
           setShowSidebar(true);
@@ -111,12 +118,22 @@ const OpenLayersMap = () => {
     const newFeatures = locationsData.locations
       .filter((location) => {
         if (location.generalRating < filters.minRating) return false;
+        
         if (filters.amenities.length > 0) {
           const locationAmenities = location.amenities.map((a) => a.name);
           return filters.amenities.every((amenity) =>
             locationAmenities.includes(amenity)
           );
         }
+        
+        if (filters.noiseLevels.length > 0 && !filters.noiseLevels.includes(location.noiseLevel)) {
+          return false;
+        }
+        
+        if (filters.seating.length > 0 && !filters.seating.includes(location.seating)) {
+          return false;
+        }
+        
         return true;
       })
       .map((location) => {
@@ -128,6 +145,8 @@ const OpenLayersMap = () => {
           image: location.image,
           generalRating: location.generalRating,
           amenities: location.amenities,
+          noiseLevel: location.noiseLevel,
+          seating: location.seating,
           featuredReview: location.featuredReview,
         });
 
