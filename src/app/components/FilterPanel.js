@@ -49,7 +49,7 @@ const FilterPanel = ({ filters, setFilters }) => {
   };
 
   return (
-    <div className="absolute top-4 left-16 bg-white p-4 rounded-lg shadow-lg z-10 w-64 text-black">
+    <div className="absolute top-4 left-32 bg-white p-4 rounded-lg shadow-lg z-10 w-64 text-black">
       <h2 className="text-lg font-bold mb-4">Filter Study Spaces</h2>
 
       {/* Rating Slider */}

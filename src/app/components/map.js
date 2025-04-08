@@ -11,8 +11,9 @@ import Style from "ol/style/Style";
 import Icon from "ol/style/Icon";
 import Sidebar from "./Sidebar";
 import FilterPanel from "./FilterPanel";
-import { FaFilter, FaTimes } from "react-icons/fa";
+import { FaFilter, FaTimes, FaEdit } from "react-icons/fa";
 import ZoomControls from "./Zoom";
+import Menu from "./Menu";
 
 const OpenLayersMap = () => {
   const mapRef = useRef(null);
@@ -23,6 +24,7 @@ const OpenLayersMap = () => {
   const [selectedSpace, setSelectedSpace] = useState(null);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
   const [activeFeatureId, setActiveFeatureId] = useState(null);
   const [filters, setFilters] = useState({ 
     minRating: 0, 
@@ -191,19 +193,36 @@ const OpenLayersMap = () => {
     });
   };
 
+  const handleCloseMenu = () => {
+    setShowMenu(false);
+    setActiveFeatureId(null);
+    vectorSourceRef.current.getFeatures().forEach((f) => {
+      f.set("active", false);
+      f.setStyle(styles.inactive);
+    });
+  };
+
   return (
     <>
       <div ref={mapRef} className="absolute top-0 left-0 w-full h-full" />
       <ZoomControls mapInstance={mapInstance} />
       <button
-        onClick={() => setShowFilters(!showFilters)}
+        onClick={() => setShowMenu(!showMenu)}
         className="absolute top-4 left-4 bg-white p-3 rounded-lg shadow-lg z-10 hover:bg-gray-100 transition-colors"
+        aria-label="Add location"
+      >
+        <FaEdit size={20} className="text-black pl-1" />
+      </button>
+      <button
+        onClick={() => setShowFilters(!showFilters)}
+        className="absolute top-4 left-18 bg-white p-3 rounded-lg shadow-lg z-10 hover:bg-gray-100 transition-colors"
         aria-label="Toggle filters"
       >
         {showFilters ? <FaTimes size={20} className="text-black" /> : <FaFilter size={20} className="text-black" />}
       </button>
       {showFilters && <FilterPanel filters={filters} setFilters={setFilters} />}
       {showSidebar && <Sidebar studySpace={selectedSpace} onClose={handleCloseSidebar} />}
+      {showMenu && <Menu onClose={handleCloseMenu} />}
     </>
   );
 };
