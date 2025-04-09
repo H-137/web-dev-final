@@ -15,6 +15,16 @@ import { FaFilter, FaTimes, FaEdit } from "react-icons/fa";
 import ZoomControls from "./Zoom";
 import Menu from "./Menu";
 
+const styles = {
+  active: new Style({
+    image: new Icon({ anchor: [0.5, 1], src: "/marker_red.svg", scale: 0.06 }),
+  }),
+  inactive: new Style({
+    image: new Icon({ anchor: [0.5, 1], src: "/marker.svg", scale: 0.05 }),
+  }),
+};
+
+
 const OpenLayersMap = () => {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
@@ -102,15 +112,6 @@ const OpenLayersMap = () => {
       mapInstance.current.setTarget(null);
     };
   }, [locationsData]);
-
-  const styles = {
-    active: new Style({
-      image: new Icon({ anchor: [0.5, 1], src: "/marker_red.svg", scale: 0.06 }),
-    }),
-    inactive: new Style({
-      image: new Icon({ anchor: [0.5, 1], src: "/marker.svg", scale: 0.05 }),
-    }),
-  };
 
   useEffect(() => {
     if (!locationsData) return;

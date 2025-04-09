@@ -1,5 +1,6 @@
 import React from "react";
 import { FaTimes } from "react-icons/fa"; // Importing the close icon
+import Image from "next/image";
 
 const Sidebar = ({ studySpace, onClose }) => {
   // Ensure studySpace exists before rendering
@@ -20,11 +21,14 @@ const Sidebar = ({ studySpace, onClose }) => {
 
       {/* Study Space Image */}
       {studySpace.image && (
-        <img
-          src={studySpace.image}
-          alt={studySpace.name}
-          className="w-full h-40 object-cover rounded-lg mb-4"
-        />
+        <div className="relative w-full h-40 mb-4">
+          <Image
+            src={studySpace.image}
+            alt={studySpace.name}
+            fill
+            className="object-cover rounded-lg"
+          />
+        </div>
       )}
 
       <div className="flex flex-row justify-between items-center mb-4">
@@ -49,7 +53,7 @@ const Sidebar = ({ studySpace, onClose }) => {
         <>
           <h3 className="text-lg font-semibold mt-4 mb-2">Featured Review</h3>
           <blockquote className="italic text-gray-600 border-l-4 border-blue-500 pl-4">
-            "{studySpace.featuredReview}"
+            {studySpace.featuredReview}
           </blockquote>
 
           {/* Stars next to the featured review */}
