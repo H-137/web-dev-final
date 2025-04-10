@@ -24,11 +24,11 @@ const styles = {
   }),
 };
 
-
 const OpenLayersMap = () => {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const vectorSourceRef = useRef(new VectorSource());
+  const vectorLayerRef = useRef(new VectorLayer({ source: vectorSourceRef.current }));
 
   const [locationsData, setLocationsData] = useState(null);
   const [selectedSpace, setSelectedSpace] = useState(null);
@@ -36,13 +36,81 @@ const OpenLayersMap = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [activeFeatureId, setActiveFeatureId] = useState(null);
-  const [filters, setFilters] = useState({ 
-    minRating: 0, 
+  const [filters, setFilters] = useState({
+    minRating: 0,
     amenities: [],
     noiseLevels: [],
-    seating: []
+    seating: [],
   });
 
+  const handleAddLocation = (newLocation) => {
+    setLocationsData(prev => ({
+      ...prev,
+      locations: [...(prev?.locations || []), {
+        ...newLocation,
+        coordinates: newLocation.coordinates.map(Number) // Ensure numbers
+      }],
+    }));
+  };
+
+  // Only initialize map once
+  useEffect(() => {
+    if (mapRef.current && !mapInstance.current) {
+      mapInstance.current = new Map({
+        target: mapRef.current,
+        layers: [
+          new TileLayer({
+            source: new XYZ({
+              url: "https://{a-d}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+            }),
+          }),
+          vectorLayerRef.current,
+        ],
+        view: new View({
+          center: [-7922441.18, 5211368.96],
+          zoom: 16,
+        }),
+        controls: [],
+      });
+
+      mapInstance.current.on("click", (event) => {
+        const feature = mapInstance.current.forEachFeatureAtPixel(event.pixel, (feat) => feat);
+
+        if (feature) {
+          vectorSourceRef.current.getFeatures().forEach((f) => {
+            if (f !== feature) {
+              f.set("active", false);
+              f.setStyle(styles.inactive);
+            }
+          });
+
+          const isActive = feature.get("active");
+          feature.set("active", !isActive);
+          feature.setStyle(isActive ? styles.inactive : styles.active);
+
+          if (!isActive) {
+            setActiveFeatureId(feature.getId());
+            setSelectedSpace({
+              name: feature.get("name"),
+              description: feature.get("description"),
+              image: feature.get("image"),
+              generalRating: feature.get("generalRating"),
+              amenities: feature.get("amenities"),
+              noiseLevel: feature.get("noiseLevel"),
+              seating: feature.get("seating"),
+              featuredReview: feature.get("featuredReview"),
+            });
+            setShowSidebar(true);
+          } else {
+            setActiveFeatureId(null);
+            setShowSidebar(false);
+          }
+        }
+      });
+    }
+  }, []);
+
+  // Load locations once from JSON
   useEffect(() => {
     fetch("/locations.json")
       .then((response) => response.json())
@@ -50,69 +118,7 @@ const OpenLayersMap = () => {
       .catch((error) => console.error("Error loading locations data:", error));
   }, []);
 
-  useEffect(() => {
-    if (!mapRef.current || mapInstance.current || !locationsData) return;
-
-    mapInstance.current = new Map({
-      target: mapRef.current,
-      layers: [
-        new TileLayer({
-          source: new XYZ({
-            url: "https://{a-d}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-          }),
-        }),
-        new VectorLayer({ source: vectorSourceRef.current }),
-      ],
-      view: new View({
-        center: [-7922441.18, 5211368.96],
-        zoom: 16,
-      }),
-      controls: [],
-    });
-
-    mapInstance.current.on("click", (event) => {
-      const feature = mapInstance.current.forEachFeatureAtPixel(
-        event.pixel,
-        (feat) => feat
-      );
-
-      if (feature) {
-        vectorSourceRef.current.getFeatures().forEach((f) => {
-          if (f !== feature) {
-            f.set("active", false);
-            f.setStyle(styles.inactive);
-          }
-        });
-
-        const isActive = feature.get("active");
-        feature.set("active", !isActive);
-        feature.setStyle(isActive ? styles.inactive : styles.active);
-
-        if (!isActive) {
-          setActiveFeatureId(feature.getId());
-          setSelectedSpace({
-            name: feature.get("name"),
-            description: feature.get("description"),
-            image: feature.get("image"),
-            generalRating: feature.get("generalRating"),
-            amenities: feature.get("amenities"),
-            noiseLevel: feature.get("noiseLevel"),
-            seating: feature.get("seating"),
-            featuredReview: feature.get("featuredReview"),
-          });
-          setShowSidebar(true);
-        } else {
-          setActiveFeatureId(null);
-          setShowSidebar(false);
-        }
-      }
-    });
-
-    return () => {
-      mapInstance.current.setTarget(null);
-    };
-  }, [locationsData]);
-
+  // Refresh features whenever locationsData or filters change
   useEffect(() => {
     if (!locationsData) return;
 
@@ -120,34 +126,22 @@ const OpenLayersMap = () => {
 
     const newFeatures = locationsData.locations
       .filter((location) => {
-        // Check minimum rating
         if (location.generalRating < filters.minRating) return false;
-        
-        // Check noise levels (if any filters are set)
+
         if (filters.noiseLevels.length > 0 && !filters.noiseLevels.includes(location.noiseLevel)) {
           return false;
         }
-        
-        // Check seating (if any filters are set)
-        if (filters.seating.length > 0) {
-          // Handle both string (old) and array (new) seating data
-          const locationSeating = Array.isArray(location.seating) 
-            ? location.seating 
-            : [location.seating];
-            
-          if (!filters.seating.some(seat => locationSeating.includes(seat))) {
-            return false;
-          }
+
+        const locationSeating = Array.isArray(location.seating) ? location.seating : [location.seating];
+        if (filters.seating.length > 0 && !filters.seating.some(seat => locationSeating.includes(seat))) {
+          return false;
         }
-        
-        // Check amenities (if any filters are set)
-        if (filters.amenities.length > 0) {
-          const locationAmenities = location.amenities.map(a => a.name);
-          if (!filters.amenities.every(amenity => locationAmenities.includes(amenity))) {
-            return false;
-          }
+
+        const locationAmenities = location.amenities.map(a => a.name);
+        if (filters.amenities.length > 0 && !filters.amenities.every(amenity => locationAmenities.includes(amenity))) {
+          return false;
         }
-        
+
         return true;
       })
       .map((location) => {
@@ -165,24 +159,13 @@ const OpenLayersMap = () => {
         });
 
         feature.setId(location.id);
-        feature.setStyle(
-          activeFeatureId === location.id ? styles.active : styles.inactive
-        );
-
+        feature.setStyle(activeFeatureId === location.id ? styles.active : styles.inactive);
         return feature;
       });
 
     vectorSourceRef.current.addFeatures(newFeatures);
 
-    if (activeFeatureId) {
-      const activeFeature = vectorSourceRef.current.getFeatureById(activeFeatureId);
-      if (activeFeature) {
-        activeFeature.set("active", true);
-        activeFeature.setStyle(styles.active);
-      } else {
-        setActiveFeatureId(null);
-      }
-    }
+    
   }, [locationsData, filters, activeFeatureId]);
 
   const handleCloseSidebar = () => {
@@ -223,7 +206,7 @@ const OpenLayersMap = () => {
       </button>
       {showFilters && <FilterPanel filters={filters} setFilters={setFilters} />}
       {showSidebar && <Sidebar studySpace={selectedSpace} onClose={handleCloseSidebar} />}
-      {showMenu && <Menu onClose={handleCloseMenu} />}
+      {showMenu && <Menu onClose={handleCloseMenu} onAddLocation={handleAddLocation} />}
     </>
   );
 };
