@@ -31,6 +31,9 @@ const OpenLayersMap = () => {
   const vectorLayerRef = useRef(new VectorLayer({ source: vectorSourceRef.current }));
 
   const [locationsData, setLocationsData] = useState(null);
+  const [reviewsData, setReviewsData] = useState({});
+  const reviewsRef = useRef(reviewsData); //  Ref to keep reviews in sync
+
   const [selectedSpace, setSelectedSpace] = useState(null);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -43,17 +46,32 @@ const OpenLayersMap = () => {
     seating: [],
   });
 
-  const handleAddLocation = (newLocation) => {
-    setLocationsData(prev => ({
-      ...prev,
-      locations: [...(prev?.locations || []), {
-        ...newLocation,
-        coordinates: newLocation.coordinates.map(Number) // Ensure numbers
-      }],
-    }));
-  };
+  //  Keep reviewsRef in sync with reviewsData
+  useEffect(() => {
+    reviewsRef.current = reviewsData;
+  }, [reviewsData]);
 
-  // Only initialize map once
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [locationsResponse, reviewsResponse] = await Promise.all([
+          fetch("/locations.json"),
+          fetch("/reviews.json")
+        ]);
+
+        const locations = await locationsResponse.json();
+        const reviews = await reviewsResponse.json();
+
+        setLocationsData(locations);
+        setReviewsData(reviews || {});
+      } catch (error) {
+        console.error("Error loading data:", error);
+      }
+    };
+
+    loadData();
+  }, []);
+
   useEffect(() => {
     if (mapRef.current && !mapInstance.current) {
       mapInstance.current = new Map({
@@ -73,81 +91,67 @@ const OpenLayersMap = () => {
         controls: [],
       });
 
+      //  Click handler using latest reviews
       mapInstance.current.on("click", (event) => {
         const feature = mapInstance.current.forEachFeatureAtPixel(event.pixel, (feat) => feat);
+        if (!feature) return;
 
-        if (feature) {
-          vectorSourceRef.current.getFeatures().forEach((f) => {
-            if (f !== feature) {
-              f.set("active", false);
-              f.setStyle(styles.inactive);
-            }
+        const isActive = !feature.get("active");
+
+        vectorSourceRef.current.getFeatures().forEach((f) => {
+          f.set("active", false);
+          f.setStyle(styles.inactive);
+        });
+
+        feature.set("active", isActive);
+        feature.setStyle(isActive ? styles.active : styles.inactive);
+
+        if (isActive) {
+          const locationName = feature.get("name");
+          setSelectedSpace({
+            name: locationName,
+            description: feature.get("description"),
+            image: feature.get("image"),
+            generalRating: feature.get("generalRating"),
+            amenities: feature.get("amenities"),
+            noiseLevel: feature.get("noiseLevel"),
+            seating: feature.get("seating"),
+            featuredReview: feature.get("featuredReview"),
+            reviews: reviewsRef.current[locationName] || [] // Always current
           });
-
-          const isActive = feature.get("active");
-          feature.set("active", !isActive);
-          feature.setStyle(isActive ? styles.inactive : styles.active);
-
-          if (!isActive) {
-            setActiveFeatureId(feature.getId());
-            setSelectedSpace({
-              name: feature.get("name"),
-              description: feature.get("description"),
-              image: feature.get("image"),
-              generalRating: feature.get("generalRating"),
-              amenities: feature.get("amenities"),
-              noiseLevel: feature.get("noiseLevel"),
-              seating: feature.get("seating"),
-              featuredReview: feature.get("featuredReview"),
-            });
-            setShowSidebar(true);
-          } else {
-            setActiveFeatureId(null);
-            setShowSidebar(false);
-          }
+          setShowSidebar(true);
+          setActiveFeatureId(feature.getId());
+        } else {
+          setShowSidebar(false);
+          setActiveFeatureId(null);
         }
       });
     }
-  }, []);
+  }, []); // Initial setup only
 
-  // Load locations once from JSON
-  useEffect(() => {
-    fetch("/locations.json")
-      .then((response) => response.json())
-      .then((data) => setLocationsData(data))
-      .catch((error) => console.error("Error loading locations data:", error));
-  }, []);
-
-  // Refresh features whenever locationsData or filters change
   useEffect(() => {
     if (!locationsData) return;
 
     vectorSourceRef.current.clear();
-
     const newFeatures = locationsData.locations
       .filter((location) => {
         if (location.generalRating < filters.minRating) return false;
-
         if (filters.noiseLevels.length > 0 && !filters.noiseLevels.includes(location.noiseLevel)) {
           return false;
         }
-
         const locationSeating = Array.isArray(location.seating) ? location.seating : [location.seating];
         if (filters.seating.length > 0 && !filters.seating.some(seat => locationSeating.includes(seat))) {
           return false;
         }
-
         const locationAmenities = location.amenities.map(a => a.name);
         if (filters.amenities.length > 0 && !filters.amenities.every(amenity => locationAmenities.includes(amenity))) {
           return false;
         }
-
         return true;
       })
       .map((location) => {
         const feature = new Feature({
           geometry: new Point(location.coordinates),
-          active: false,
           name: location.name,
           description: location.description,
           image: location.image,
@@ -156,6 +160,7 @@ const OpenLayersMap = () => {
           noiseLevel: location.noiseLevel,
           seating: location.seating,
           featuredReview: location.featuredReview,
+          active: false
         });
 
         feature.setId(location.id);
@@ -164,9 +169,29 @@ const OpenLayersMap = () => {
       });
 
     vectorSourceRef.current.addFeatures(newFeatures);
-
-    
   }, [locationsData, filters, activeFeatureId]);
+
+  const handleAddReview = (locationName, newReview) => {
+    const reviewWithId = {
+      ...newReview,
+      id: `rev-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      date: new Date().toISOString()
+    };
+
+    const updatedReviews = {
+      ...reviewsRef.current,
+      [locationName]: [...(reviewsRef.current[locationName] || []), reviewWithId]
+    };
+
+    setReviewsData(updatedReviews);
+
+    if (selectedSpace && selectedSpace.name === locationName) {
+      setSelectedSpace(prev => ({
+        ...prev,
+        reviews: updatedReviews[locationName]
+      }));
+    }
+  };
 
   const handleCloseSidebar = () => {
     setShowSidebar(false);
@@ -186,10 +211,18 @@ const OpenLayersMap = () => {
     });
   };
 
+  const handleAddLocation = (newLocation) => {
+    setLocationsData(prev => ({
+      ...prev,
+      locations: [...prev.locations, newLocation]
+    }));
+  };
+
   return (
     <>
       <div ref={mapRef} className="absolute top-0 left-0 w-full h-full" />
       <ZoomControls mapInstance={mapInstance} />
+
       <button
         onClick={() => setShowMenu(!showMenu)}
         className="absolute top-4 left-4 bg-white p-3 rounded-lg shadow-lg z-10 hover:bg-gray-100 transition-colors"
@@ -197,6 +230,7 @@ const OpenLayersMap = () => {
       >
         <FaEdit size={20} className="text-black pl-1" />
       </button>
+
       <button
         onClick={() => setShowFilters(!showFilters)}
         className="absolute top-4 left-18 bg-white p-3 rounded-lg shadow-lg z-10 hover:bg-gray-100 transition-colors"
@@ -204,8 +238,17 @@ const OpenLayersMap = () => {
       >
         {showFilters ? <FaTimes size={20} className="text-black" /> : <FaFilter size={20} className="text-black" />}
       </button>
+
       {showFilters && <FilterPanel filters={filters} setFilters={setFilters} />}
-      {showSidebar && <Sidebar studySpace={selectedSpace} onClose={handleCloseSidebar} />}
+
+      {showSidebar && (
+        <Sidebar
+          studySpace={selectedSpace}
+          onClose={handleCloseSidebar}
+          onAddReview={handleAddReview}
+        />
+      )}
+
       {showMenu && <Menu onClose={handleCloseMenu} onAddLocation={handleAddLocation} />}
     </>
   );

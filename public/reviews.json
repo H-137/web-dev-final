@@ -1,27 +1,19 @@
 {
-  "Bapst": [
+  "O'Neill Library": [
     {
       "id": "rev001",
       "reviewText": "Great atmosphere and quiet environment. Perfect for deep focus.",
-      "rating": 5,
-      "timestamp": "2025-04-10T15:32:00Z",
-      "reviewer": "anonymous_user_1",
-      "upvotes": 3,
-      "downvotes": 0
+      "rating": 5
     }
   ],
-  "Gasson":[
+  "Gasson Hall":[
 
   ],
-  "Stokes": [
+  "Stokes Hall": [
     {
       "id": "rev002",
       "reviewText": "Love to study in Stokes, but it is often very busy and hard to get a classroom.",
-      "rating": 3,
-      "timestamp": "2025-04-09T11:15:00Z",
-      "reviewer": "anonymous_user_2",
-      "upvotes": 1,
-      "downvotes": 1
+      "rating": 3
     }
   ]
 }
