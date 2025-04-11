@@ -1,22 +1,56 @@
 'use client';
 
 import React, { useState } from 'react';
+import Select from 'react-select';
 
 function Menu({ onClose, onAddLocation }) {
+  // Options for each filter category (should match your existing data)
+  const noiseLevelOptions = [
+    { value: "Silent", label: "Silent" },
+    { value: "Quiet", label: "Quiet" },
+    { value: "Moderate", label: "Moderate" },
+    { value: "Loud", label: "Loud" }
+  ];
+
+  const seatingOptions = [
+    { value: "Desk Chairs", label: "Desk Chairs" },
+    { value: "Cushioned Chairs", label: "Cushioned Chairs" },
+    { value: "Couches", label: "Couches" }
+  ];
+
+  const amenitiesOptions = [
+    { value: "Water Fountain", label: "Water Fountain" },
+    { value: "Quiet Zone", label: "Quiet Zone" },
+    { value: "Study Rooms", label: "Study Rooms" },
+    { value: "Projector", label: "Projector" },
+    { value: "Classrooms", label: "Classrooms" },
+    { value: "Historical Site", label: "Historical Site" },
+    { value: "Conference Rooms", label: "Conference Rooms" },
+    { value: "Cafeteria Nearby", label: "Cafeteria Nearby" },
+    { value: "Whiteboards", label: "Whiteboards" }
+  ];
+
   const [formData, setFormData] = useState({
     name: '',
     coordinates: '',
     description: '',
     noiseLevel: '',
-    seating: '',
-    generalRating: '',
+    seating: [],
+    generalRating: 50, // Default to 50% for the slider
     featuredReview: '',
-    amenities: ''
+    amenities: []
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleMultiSelectChange = (field, selectedOptions) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: selectedOptions ? selectedOptions.map(item => item.value) : []
+    }));
   };
 
   const handleSubmit = (e) => {
@@ -42,13 +76,9 @@ function Menu({ onClose, onAddLocation }) {
       otherData: `Additional info about ${formData.name}.`,
       location: "Boston College",
       image: "",
-      amenities: formData.amenities
-        .split(',')
-        .map(name => name.trim())
-        .filter(Boolean)
-        .map(name => ({ name })),
+      amenities: formData.amenities.map(name => ({ name })),
       noiseLevel: formData.noiseLevel,
-      seating: formData.seating,
+      seating: formData.seating.join(', '),
       featuredReview: formData.featuredReview,
       generalRating: Number(formData.generalRating)
     };
@@ -73,11 +103,75 @@ function Menu({ onClose, onAddLocation }) {
           <input name="name" placeholder="Name" value={formData.name} onChange={handleChange} required className="border p-2 rounded" />
           <input name="coordinates" placeholder="Coordinates (e.g. -7922600,5211350)" value={formData.coordinates} onChange={handleChange} required className="border p-2 rounded" />
           <input name="description" placeholder="Description" value={formData.description} onChange={handleChange} className="border p-2 rounded" />
-          <input name="noiseLevel" placeholder="Noise Level" value={formData.noiseLevel} onChange={handleChange} className="border p-2 rounded" />
-          <input name="seating" placeholder="Seating" value={formData.seating} onChange={handleChange} className="border p-2 rounded" />
-          <input name="generalRating" placeholder="Rating (0–100)" value={formData.generalRating} onChange={handleChange} type="number" className="border p-2 rounded" />
           <input name="featuredReview" placeholder="Featured Review" value={formData.featuredReview} onChange={handleChange} className="border p-2 rounded" />
-          <input name="amenities" placeholder="Amenities (comma-separated)" value={formData.amenities} onChange={handleChange} className="border p-2 rounded" />
+
+          {/* Rating Slider */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">
+              Rating: {formData.generalRating}%
+            </label>
+            <input
+              type="range"
+              name="generalRating"
+              min="0"
+              max="100"
+              value={formData.generalRating || 0}
+              onChange={handleChange}
+              className="w-full h-2 rounded-lg appearance-none bg-gray-300 cursor-pointer accent-[#98002E]"
+            />
+          </div>
+
+          {/* Amenities Multiselect */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Amenities</label>
+            <Select
+              isMulti
+              options={amenitiesOptions}
+              value={amenitiesOptions.filter(option => formData.amenities.includes(option.value))}
+              onChange={(selected) => handleMultiSelectChange('amenities', selected)}
+              className="text-sm"
+              classNamePrefix="react-select"
+              placeholder="Select amenities..."
+            />
+          </div>
+
+          {/* Noise Level Dropdown */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Noise Level</label>
+            <Select
+              options={noiseLevelOptions}
+              value={noiseLevelOptions.find(option => option.value === formData.noiseLevel)}
+              onChange={(selected) => setFormData(prev => ({
+                ...prev,
+                noiseLevel: selected ? selected.value : ''
+              }))}
+              className="text-sm"
+              classNamePrefix="react-select"
+              placeholder="Select noise level..."
+              isClearable
+            />
+          </div>
+
+          {/* Seating Multiselect */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Seating Type</label>
+            <Select
+              isMulti
+              options={seatingOptions}
+              value={seatingOptions.filter(option => formData.seating.includes(option.value))}
+              onChange={(selected) => handleMultiSelectChange('seating', selected)}
+              className="text-sm"
+              classNamePrefix="react-select"
+              placeholder="Select seating types..."
+            />
+          </div>
+
+
+
+          
+          
+
+
           <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Add</button>
         </form>
       </div>
