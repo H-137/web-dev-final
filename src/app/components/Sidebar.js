@@ -4,11 +4,13 @@ import Image from "next/image";
 
 const Sidebar = ({ studySpace, onClose }) => {
   // Ensure studySpace exists before rendering
-  if (!studySpace) return null;
+
 
   const [showReviewForm, setShowReviewForm] = useState(false);
 const [reviewText, setReviewText] = useState("");
 const [rating, setRating] = useState(0);
+
+if (!studySpace) return null;
 
 const handleSubmit = (e) => {
   e.preventDefault();
