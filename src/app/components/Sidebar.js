@@ -1,10 +1,29 @@
-import React from "react";
+import React, { useState } from "react";
 import { FaTimes } from "react-icons/fa"; // Importing the close icon
 import Image from "next/image";
 
 const Sidebar = ({ studySpace, onClose }) => {
   // Ensure studySpace exists before rendering
   if (!studySpace) return null;
+
+  const [showReviewForm, setShowReviewForm] = useState(false);
+const [reviewText, setReviewText] = useState("");
+const [rating, setRating] = useState(0);
+
+const handleSubmit = (e) => {
+  e.preventDefault();
+  console.log("Submitted review:", { reviewText, rating });
+  setShowReviewForm(false);
+  setReviewText("");
+  setRating(0);
+};
+
+const handleCancel = () => {
+  setShowReviewForm(false);
+  setReviewText("");
+  setRating(0);
+};
+
 
   return (
     <div className="fixed top-0 right-0 w-1/3 bg-white p-6 rounded-l-lg shadow-lg overflow-y-auto z-10 m-5 text-black">
@@ -64,6 +83,62 @@ const Sidebar = ({ studySpace, onClose }) => {
           </div>
         </>
       )}
+
+      {/* Write a Review Section */}
+<div className="mt-6">
+  {!showReviewForm ? (
+    <button
+      onClick={() => setShowReviewForm(true)}
+      className="bg-[#98002E] text-white px-4 py-2 rounded-md hover:bg-[#7a0025] transition"
+    >
+      Write a Review
+    </button>
+  ) : (
+    <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+      <textarea
+        value={reviewText}
+        onChange={(e) => setReviewText(e.target.value)}
+        placeholder="Write your review..."
+        className="w-full p-2 border border-gray-300 rounded-md resize-none"
+        rows={3}
+        required
+      />
+
+      <div className="flex items-center space-x-1">
+        <span className="font-medium">Your Rating:</span>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            type="button"
+            onClick={() => setRating(star)}
+            className={`text-2xl ${
+              star <= rating ? "text-yellow-500" : "text-gray-300"
+            }`}
+          >
+            ★
+          </button>
+        ))}
+      </div>
+
+      <div className="flex space-x-2">
+        <button
+          type="submit"
+          className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition"
+        >
+          Submit
+        </button>
+        <button
+          type="button"
+          onClick={handleCancel}
+          className="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-gray-400 transition"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  )}
+</div>
+
     </div>
   );
 };
