@@ -1,10 +1,10 @@
+// ======= Menu.js =======
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
 
-function Menu({ onClose, onAddLocation }) {
-  // Options for each filter category (should match your existing data)
+function Menu({ onClose, onAddLocation, initialCoordinates, onRequestMapClick }) {
   const noiseLevelOptions = [
     { value: "Silent", label: "Silent" },
     { value: "Quiet", label: "Quiet" },
@@ -36,10 +36,19 @@ function Menu({ onClose, onAddLocation }) {
     description: '',
     noiseLevel: '',
     seating: [],
-    generalRating: 50, // Default to 50% for the slider
+    generalRating: 50,
     featuredReview: '',
     amenities: []
   });
+
+  useEffect(() => {
+    if (initialCoordinates) {
+      setFormData(prev => ({
+        ...prev,
+        coordinates: `${initialCoordinates[0].toFixed(2)}, ${initialCoordinates[1].toFixed(2)}`
+      }));
+    }
+  }, [initialCoordinates]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -53,10 +62,16 @@ function Menu({ onClose, onAddLocation }) {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handlePickOnMap = () => {
+    onClose();
+    setTimeout(() => {
+      onRequestMapClick();
+    }, 0);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Parse coordinate string to number array (e.g., "-7922600,5211350" => [-7922600.0, 5211350.0])
     const coordsArray = formData.coordinates
       .split(',')
       .map(str => parseFloat(str.trim()))
@@ -83,9 +98,20 @@ function Menu({ onClose, onAddLocation }) {
       generalRating: Number(formData.generalRating)
     };
 
-    console.log("Adding new location:", newLocation);
-    onAddLocation(newLocation);
-    onClose();
+    try {
+      onAddLocation(newLocation);
+      const response = await fetch('/api/locations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newLocation)
+      });
+      const result = await response.json();
+      console.log("Location saved to DB:", result);
+      onClose();
+    } catch (error) {
+      console.error("Failed to save location:", error);
+      alert("Error saving location to server.");
+    }
   };
 
   return (
@@ -99,78 +125,43 @@ function Menu({ onClose, onAddLocation }) {
             </svg>
           </button>
         </div>
+
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <input name="name" placeholder="Name" value={formData.name} onChange={handleChange} required className="border p-2 rounded" />
-          <input name="coordinates" placeholder="Coordinates (e.g. -7922600,5211350)" value={formData.coordinates} onChange={handleChange} required className="border p-2 rounded" />
+
+          <div className="flex gap-2">
+            <input name="coordinates" placeholder="Coordinates (e.g. -7922600,5211350)" value={formData.coordinates} onChange={handleChange} className="border p-2 rounded w-full" readOnly />
+            <button
+              type="button"
+              onClick={handlePickOnMap}
+              className="bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700"
+            >
+              Pick from Map
+            </button>
+          </div>
+
           <input name="description" placeholder="Description" value={formData.description} onChange={handleChange} className="border p-2 rounded" />
           <input name="featuredReview" placeholder="Featured Review" value={formData.featuredReview} onChange={handleChange} className="border p-2 rounded" />
 
-          {/* Rating Slider */}
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">
-              Rating: {formData.generalRating}%
-            </label>
-            <input
-              type="range"
-              name="generalRating"
-              min="0"
-              max="100"
-              value={formData.generalRating || 0}
-              onChange={handleChange}
-              className="w-full h-2 rounded-lg appearance-none bg-gray-300 cursor-pointer accent-[#98002E]"
-            />
+            <label className="block text-sm font-medium mb-1">Rating: {formData.generalRating}%</label>
+            <input type="range" name="generalRating" min="0" max="100" value={formData.generalRating || 0} onChange={handleChange} className="w-full h-2 rounded-lg appearance-none bg-gray-300 cursor-pointer accent-[#98002E]" />
           </div>
 
-          {/* Amenities Multiselect */}
           <div>
             <label className="block text-sm font-medium mb-1">Amenities</label>
-            <Select
-              isMulti
-              options={amenitiesOptions}
-              value={amenitiesOptions.filter(option => formData.amenities.includes(option.value))}
-              onChange={(selected) => handleMultiSelectChange('amenities', selected)}
-              className="text-sm"
-              classNamePrefix="react-select"
-              placeholder="Select amenities..."
-            />
+            <Select isMulti options={amenitiesOptions} value={amenitiesOptions.filter(option => formData.amenities.includes(option.value))} onChange={(selected) => handleMultiSelectChange('amenities', selected)} className="text-sm" classNamePrefix="react-select" placeholder="Select amenities..." />
           </div>
 
-          {/* Noise Level Dropdown */}
           <div>
             <label className="block text-sm font-medium mb-1">Noise Level</label>
-            <Select
-              options={noiseLevelOptions}
-              value={noiseLevelOptions.find(option => option.value === formData.noiseLevel)}
-              onChange={(selected) => setFormData(prev => ({
-                ...prev,
-                noiseLevel: selected ? selected.value : ''
-              }))}
-              className="text-sm"
-              classNamePrefix="react-select"
-              placeholder="Select noise level..."
-              isClearable
-            />
+            <Select options={noiseLevelOptions} value={noiseLevelOptions.find(option => option.value === formData.noiseLevel)} onChange={(selected) => setFormData(prev => ({ ...prev, noiseLevel: selected ? selected.value : '' }))} className="text-sm" classNamePrefix="react-select" placeholder="Select noise level..." isClearable />
           </div>
 
-          {/* Seating Multiselect */}
           <div>
             <label className="block text-sm font-medium mb-1">Seating Type</label>
-            <Select
-              isMulti
-              options={seatingOptions}
-              value={seatingOptions.filter(option => formData.seating.includes(option.value))}
-              onChange={(selected) => handleMultiSelectChange('seating', selected)}
-              className="text-sm"
-              classNamePrefix="react-select"
-              placeholder="Select seating types..."
-            />
+            <Select isMulti options={seatingOptions} value={seatingOptions.filter(option => formData.seating.includes(option.value))} onChange={(selected) => handleMultiSelectChange('seating', selected)} className="text-sm" classNamePrefix="react-select" placeholder="Select seating types..." />
           </div>
-
-
-
-          
-          
-
 
           <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Add</button>
         </form>

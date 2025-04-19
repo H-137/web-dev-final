@@ -1,3 +1,4 @@
+// ======= OpenLayersMap.js =======
 import React, { useEffect, useRef, useState } from "react";
 import "ol/ol.css";
 import { Map, View } from "ol";
@@ -28,11 +29,16 @@ const OpenLayersMap = () => {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const vectorSourceRef = useRef(new VectorSource());
-  const vectorLayerRef = useRef(new VectorLayer({ source: vectorSourceRef.current }));
+  const vectorLayerRef = useRef(
+    new VectorLayer({ source: vectorSourceRef.current })
+  );
 
   const [locationsData, setLocationsData] = useState(null);
   const [reviewsData, setReviewsData] = useState({});
-  const reviewsRef = useRef(reviewsData); //  Ref to keep reviews in sync
+  const reviewsRef = useRef(reviewsData);
+  const [awaitingMapClick, setAwaitingMapClick] = useState(false);
+  const awaitingMapClickRef = useRef(false); // New ref
+  const [clickCoordinates, setClickCoordinates] = useState(null);
 
   const [selectedSpace, setSelectedSpace] = useState(null);
   const [showSidebar, setShowSidebar] = useState(false);
@@ -46,37 +52,35 @@ const OpenLayersMap = () => {
     seating: [],
   });
 
-  //  Keep reviewsRef in sync with reviewsData
   useEffect(() => {
     reviewsRef.current = reviewsData;
   }, [reviewsData]);
+
+  useEffect(() => {
+    awaitingMapClickRef.current = awaitingMapClick;
+  }, [awaitingMapClick]);
 
   useEffect(() => {
     const loadData = async () => {
       try {
         const [locationsResponse, reviewsResponse] = await Promise.all([
           fetch("/api/locations"),
-          fetch("/api/reviews")
+          fetch("/api/reviews"),
         ]);
-
         const locations = await locationsResponse.json();
         const reviewsRaw = await reviewsResponse.json();
-
-        // Transform back into object shape: { "Location Name": [ ... ] }
         const groupedReviews = reviewsRaw.reduce((acc, review) => {
           const loc = review.locationName;
           if (!acc[loc]) acc[loc] = [];
           acc[loc].push(review);
           return acc;
         }, {});
-
         setLocationsData({ locations });
         setReviewsData(groupedReviews);
       } catch (error) {
         console.error("Error loading data:", error);
       }
     };
-
     loadData();
   }, []);
 
@@ -92,25 +96,29 @@ const OpenLayersMap = () => {
           }),
           vectorLayerRef.current,
         ],
-        view: new View({
-          center: [-7922441.18, 5211368.96],
-          zoom: 16,
-        }),
+        view: new View({ center: [-7922441.18, 5211368.96], zoom: 16 }),
         controls: [],
       });
 
-      //  Click handler using latest reviews
       mapInstance.current.on("click", (event) => {
-        const feature = mapInstance.current.forEachFeatureAtPixel(event.pixel, (feat) => feat);
+        if (awaitingMapClickRef.current) {
+          setClickCoordinates(event.coordinate);
+          setAwaitingMapClick(false);
+          setShowMenu(true);
+          return;
+        }
+
+        const feature = mapInstance.current.forEachFeatureAtPixel(
+          event.pixel,
+          (feat) => feat
+        );
         if (!feature) return;
 
         const isActive = !feature.get("active");
-
         vectorSourceRef.current.getFeatures().forEach((f) => {
           f.set("active", false);
           f.setStyle(styles.inactive);
         });
-
         feature.set("active", isActive);
         feature.setStyle(isActive ? styles.active : styles.inactive);
 
@@ -125,7 +133,7 @@ const OpenLayersMap = () => {
             noiseLevel: feature.get("noiseLevel"),
             seating: feature.get("seating"),
             featuredReview: feature.get("featuredReview"),
-            reviews: reviewsRef.current[locationName] || [] // Always current
+            reviews: reviewsRef.current[locationName] || [],
           });
           setShowSidebar(true);
           setActiveFeatureId(feature.getId());
@@ -135,26 +143,35 @@ const OpenLayersMap = () => {
         }
       });
     }
-  }, []); // Initial setup only
+  }, []);
 
   useEffect(() => {
     if (!locationsData) return;
-
     vectorSourceRef.current.clear();
     const newFeatures = locationsData.locations
       .filter((location) => {
         if (location.generalRating < filters.minRating) return false;
-        if (filters.noiseLevels.length > 0 && !filters.noiseLevels.includes(location.noiseLevel)) {
+        if (
+          filters.noiseLevels.length > 0 &&
+          !filters.noiseLevels.includes(location.noiseLevel)
+        )
           return false;
-        }
-        const locationSeating = Array.isArray(location.seating) ? location.seating : [location.seating];
-        if (filters.seating.length > 0 && !filters.seating.some(seat => locationSeating.includes(seat))) {
+        const locationSeating = Array.isArray(location.seating)
+          ? location.seating
+          : [location.seating];
+        if (
+          filters.seating.length > 0 &&
+          !filters.seating.some((seat) => locationSeating.includes(seat))
+        )
           return false;
-        }
-        const locationAmenities = location.amenities.map(a => a.name);
-        if (filters.amenities.length > 0 && !filters.amenities.every(amenity => locationAmenities.includes(amenity))) {
+        const locationAmenities = location.amenities.map((a) => a.name);
+        if (
+          filters.amenities.length > 0 &&
+          !filters.amenities.every((amenity) =>
+            locationAmenities.includes(amenity)
+          )
+        )
           return false;
-        }
         return true;
       })
       .map((location) => {
@@ -168,14 +185,14 @@ const OpenLayersMap = () => {
           noiseLevel: location.noiseLevel,
           seating: location.seating,
           featuredReview: location.featuredReview,
-          active: false
+          active: false,
         });
-
         feature.setId(location.id);
-        feature.setStyle(activeFeatureId === location.id ? styles.active : styles.inactive);
+        feature.setStyle(
+          activeFeatureId === location.id ? styles.active : styles.inactive
+        );
         return feature;
       });
-
     vectorSourceRef.current.addFeatures(newFeatures);
   }, [locationsData, filters, activeFeatureId]);
 
@@ -183,20 +200,20 @@ const OpenLayersMap = () => {
     const reviewWithId = {
       ...newReview,
       id: `rev-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-      date: new Date().toISOString()
+      date: new Date().toISOString(),
     };
-
     const updatedReviews = {
       ...reviewsRef.current,
-      [locationName]: [...(reviewsRef.current[locationName] || []), reviewWithId]
+      [locationName]: [
+        ...(reviewsRef.current[locationName] || []),
+        reviewWithId,
+      ],
     };
-
     setReviewsData(updatedReviews);
-
     if (selectedSpace && selectedSpace.name === locationName) {
-      setSelectedSpace(prev => ({
+      setSelectedSpace((prev) => ({
         ...prev,
-        reviews: updatedReviews[locationName]
+        reviews: updatedReviews[locationName],
       }));
     }
   };
@@ -213,6 +230,7 @@ const OpenLayersMap = () => {
   const handleCloseMenu = () => {
     setShowMenu(false);
     setActiveFeatureId(null);
+    setClickCoordinates(null);
     vectorSourceRef.current.getFeatures().forEach((f) => {
       f.set("active", false);
       f.setStyle(styles.inactive);
@@ -220,10 +238,15 @@ const OpenLayersMap = () => {
   };
 
   const handleAddLocation = (newLocation) => {
-    setLocationsData(prev => ({
+    setLocationsData((prev) => ({
       ...prev,
-      locations: [...prev.locations, newLocation]
+      locations: [...prev.locations, newLocation],
     }));
+  };
+
+  const handleMapPickMode = () => {
+    console.log("Setting awaitingMapClick to true");
+    setAwaitingMapClick(true);
   };
 
   return (
@@ -232,7 +255,7 @@ const OpenLayersMap = () => {
       <ZoomControls mapInstance={mapInstance} />
 
       <button
-        onClick={() => setShowMenu(!showMenu)}
+        onClick={() => setShowMenu(true)}
         className="absolute top-4 left-4 bg-white p-3 rounded-lg shadow-lg z-10 hover:bg-gray-100 transition-colors"
         aria-label="Add location"
       >
@@ -244,11 +267,14 @@ const OpenLayersMap = () => {
         className="absolute top-4 left-18 bg-white p-3 rounded-lg shadow-lg z-10 hover:bg-gray-100 transition-colors"
         aria-label="Toggle filters"
       >
-        {showFilters ? <FaTimes size={20} className="text-black" /> : <FaFilter size={20} className="text-black" />}
+        {showFilters ? (
+          <FaTimes size={20} className="text-black" />
+        ) : (
+          <FaFilter size={20} className="text-black" />
+        )}
       </button>
 
       {showFilters && <FilterPanel filters={filters} setFilters={setFilters} />}
-
       {showSidebar && (
         <Sidebar
           studySpace={selectedSpace}
@@ -256,8 +282,14 @@ const OpenLayersMap = () => {
           onAddReview={handleAddReview}
         />
       )}
-
-      {showMenu && <Menu onClose={handleCloseMenu} onAddLocation={handleAddLocation} />}
+      {showMenu && (
+        <Menu
+          onClose={handleCloseMenu}
+          onAddLocation={handleAddLocation}
+          initialCoordinates={clickCoordinates}
+          onRequestMapClick={handleMapPickMode}
+        />
+      )}
     </>
   );
 };
