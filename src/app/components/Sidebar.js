@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { FaTimes } from "react-icons/fa";
+import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 import Image from "next/image";
 
 const Sidebar = ({ studySpace, onClose, onAddReview }) => {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewText, setReviewText] = useState("");
   const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
 
   if (!studySpace) return null;
 
@@ -40,6 +42,87 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
     setShowReviewForm(false);
     setReviewText("");
     setRating(0);
+  };
+
+  // Renders rating stars for display (non-interactive)
+  const displayRatingStars = (value) => {
+    const stars = [];
+    const maxStars = 5;
+    
+    for (let i = 1; i <= maxStars; i++) {
+      if (value >= i) {
+        stars.push(<FaStar key={i} className="text-yellow-500" />);
+      } else if (value >= i - 0.5) {
+        stars.push(<FaStarHalfAlt key={i} className="text-yellow-500" />);
+      } else {
+        stars.push(<FaRegStar key={i} className="text-gray-300" />);
+      }
+    }
+    
+    return <div className="flex space-x-1">{stars}</div>;
+  };
+
+  // Interactive star rating component
+  const StarRating = () => {
+    const starRefs = useRef([]);
+    
+    // Handle hover on star
+    const handleStarHover = (index, event) => {
+      const starWidth = event.currentTarget.offsetWidth;
+      const starLeft = event.currentTarget.getBoundingClientRect().left;
+      const mouseX = event.clientX;
+      const position = mouseX - starLeft;
+      
+      // If mouse is on the left half of the star
+      if (position < starWidth / 2) {
+        setHoverRating(index + 0.5);
+      } else {
+        setHoverRating(index + 1);
+      }
+    };
+    
+    // Handle click on star
+    const handleStarClick = (index, event) => {
+      const starWidth = event.currentTarget.offsetWidth;
+      const starLeft = event.currentTarget.getBoundingClientRect().left;
+      const mouseX = event.clientX;
+      const position = mouseX - starLeft;
+      
+      // If click is on the left half of the star
+      if (position < starWidth / 2) {
+        setRating(index + 0.5);
+      } else {
+        setRating(index + 1);
+      }
+    };
+    
+    // Create stars array with refs
+    const stars = [];
+    for (let i = 0; i < 5; i++) {
+      stars.push(
+        <div
+          key={i}
+          ref={el => starRefs.current[i] = el}
+          className="cursor-pointer relative"
+          onMouseMove={(e) => handleStarHover(i, e)}
+          onMouseLeave={() => setHoverRating(0)}
+          onClick={(e) => handleStarClick(i, e)}
+        >
+          <FaRegStar className="text-gray-300 text-2xl" />
+          
+          {/* Overlay full or half star based on hover/selected state */}
+          {(hoverRating || rating) > i && (
+            <div className="absolute top-0 left-0 overflow-hidden" style={{ 
+              width: (hoverRating || rating) >= i + 1 ? '100%' : '50%'
+            }}>
+              <FaStar className="text-yellow-500 text-2xl" />
+            </div>
+          )}
+        </div>
+      );
+    }
+    
+    return <div className="flex space-x-2">{stars}</div>;
   };
 
   return (
@@ -117,9 +200,8 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
             studySpace.reviews.map((review) => (
               <div key={review.id} className="border-b pb-4">
                 <div className="flex items-center mb-2">
-                  <span className="text-yellow-500">
-                    {"⭐".repeat(review.rating)}
-                  </span>
+                  {displayRatingStars(review.rating)}
+
                 </div>
                 <p className="text-gray-700">{review.reviewText}</p>
               </div>
@@ -148,26 +230,16 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
             required
           />
 
-          <div className="flex items-center space-x-1">
-            <span className="font-medium">Your Rating:</span>
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                type="button"
-                onClick={() => setRating(star)}
-                className={`text-2xl ${
-                  star <= rating ? "text-yellow-500" : "text-gray-300"
-                }`}
-              >
-                ★
-              </button>
-            ))}
+          <div className="flex flex-col space-y-2">
+            <span className="font-medium">Your Rating: {rating > 0 ? rating.toFixed(1) : ""}</span>
+            <StarRating />
           </div>
 
           <div className="flex space-x-2">
             <button
               type="submit"
               className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition"
+              disabled={!reviewText || rating === 0}
             >
               Submit
             </button>
