@@ -37,7 +37,7 @@ const OpenLayersMap = () => {
   const [reviewsData, setReviewsData] = useState({});
   const reviewsRef = useRef(reviewsData);
   const [awaitingMapClick, setAwaitingMapClick] = useState(false);
-  const awaitingMapClickRef = useRef(false); // New ref
+  const awaitingMapClickRef = useRef(false);
   const [clickCoordinates, setClickCoordinates] = useState(null);
 
   const [selectedSpace, setSelectedSpace] = useState(null);
@@ -51,6 +51,7 @@ const OpenLayersMap = () => {
     noiseLevels: [],
     seating: [],
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     reviewsRef.current = reviewsData;
@@ -79,6 +80,8 @@ const OpenLayersMap = () => {
         setReviewsData(groupedReviews);
       } catch (error) {
         console.error("Error loading data:", error);
+      } finally {
+        setTimeout(() => setLoading(false), 500);
       }
     };
     loadData();
@@ -251,6 +254,12 @@ const OpenLayersMap = () => {
 
   return (
     <>
+      {loading && (
+        <div className="fixed inset-0 bg-white z-50 flex items-center justify-center text-black transition-opacity duration-300">
+          <span className="text-2xl font-bold">Loading...</span>
+        </div>
+      )}
+
       <div ref={mapRef} className="absolute top-0 left-0 w-full h-full" />
       <ZoomControls mapInstance={mapInstance} />
 

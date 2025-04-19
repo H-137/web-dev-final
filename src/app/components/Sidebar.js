@@ -110,20 +110,6 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
         </div>
       </div>
 
-      {studySpace.featuredReview && (
-        <>
-          <h3 className="text-lg font-semibold mt-4 mb-2">Featured Review</h3>
-          <blockquote className="italic text-gray-600 border-l-4 border-blue-500 pl-4">
-            {studySpace.featuredReview}
-          </blockquote>
-          <div className="mt-2 flex items-center">
-            <span className="text-yellow-500">
-              {"⭐".repeat(Math.round(studySpace.generalRating / 20))}
-            </span>
-          </div>
-        </>
-      )}
-
       <div className="mt-6">
         <h3 className="text-lg font-semibold mb-2">User Reviews</h3>
         <div className="space-y-4 max-h-60 overflow-y-auto">

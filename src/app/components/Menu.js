@@ -134,7 +134,7 @@ function Menu({ onClose, onAddLocation, initialCoordinates, onRequestMapClick })
             <button
               type="button"
               onClick={handlePickOnMap}
-              className="bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700"
+              className="bg-[#98002E] text-white px-3 py-1 rounded hover:bg-[#7a0025]"
             >
               Pick from Map
             </button>
@@ -163,7 +163,7 @@ function Menu({ onClose, onAddLocation, initialCoordinates, onRequestMapClick })
             <Select isMulti options={seatingOptions} value={seatingOptions.filter(option => formData.seating.includes(option.value))} onChange={(selected) => handleMultiSelectChange('seating', selected)} className="text-sm" classNamePrefix="react-select" placeholder="Select seating types..." />
           </div>
 
-          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Add</button>
+          <button type="submit" className="bg-[#98002E] text-white px-4 py-2 rounded hover:bg-[#7a0025]">Add</button>
         </form>
       </div>
     </div>
