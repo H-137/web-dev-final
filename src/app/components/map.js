@@ -55,15 +55,23 @@ const OpenLayersMap = () => {
     const loadData = async () => {
       try {
         const [locationsResponse, reviewsResponse] = await Promise.all([
-          fetch("/locations.json"),
-          fetch("/reviews.json")
+          fetch("/api/locations"),
+          fetch("/api/reviews")
         ]);
 
         const locations = await locationsResponse.json();
-        const reviews = await reviewsResponse.json();
+        const reviewsRaw = await reviewsResponse.json();
 
-        setLocationsData(locations);
-        setReviewsData(reviews || {});
+        // Transform back into object shape: { "Location Name": [ ... ] }
+        const groupedReviews = reviewsRaw.reduce((acc, review) => {
+          const loc = review.locationName;
+          if (!acc[loc]) acc[loc] = [];
+          acc[loc].push(review);
+          return acc;
+        }, {});
+
+        setLocationsData({ locations });
+        setReviewsData(groupedReviews);
       } catch (error) {
         console.error("Error loading data:", error);
       }

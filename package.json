@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "mongodb": "^6.15.0",
     "next": "15.2.4",
     "ol": "^10.5.0",
     "ol-ext": "^4.0.29",

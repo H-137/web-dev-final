@@ -9,19 +9,34 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
 
   if (!studySpace) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!reviewText || rating === 0) return;
 
     const newReview = {
       id: `rev-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       reviewText,
       rating,
+      locationName: studySpace.name,
+      date: new Date().toISOString(),
       isFeatured: false
     };
 
     onAddReview(studySpace.name, newReview);
+
+    try {
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify([newReview])
+      });
+
+      const result = await response.json();
+      console.log("Review saved to DB:", result);
+    } catch (error) {
+      console.error("Failed to save review:", error);
+    }
+
     setShowReviewForm(false);
     setReviewText("");
     setRating(0);
@@ -29,7 +44,6 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
 
   return (
     <div className="fixed top-0 right-0 w-1/3 bg-white p-6 box-border rounded-l-lg shadow-lg overflow-y-auto z-10 m-5 mb-0 text-black max-h-[95vh]">
-      {/* Header */}
       <div className="flex justify-between items-center mb-0">
         <h2 className="text-4xl font-bold mb-0">{studySpace.name}</h2>
         <button
@@ -40,7 +54,6 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
         </button>
       </div>
 
-      {/* Study Space Image */}
       {studySpace.image && (
         <div className="relative w-full h-40 mb-4">
           <Image
@@ -52,7 +65,6 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
         </div>
       )}
 
-      {/* Amenities and Rating */}
       <div className="flex flex-row justify-between items-center mb-4">
         <div className="flex flex-col">
           <h3 className="text-lg font-semibold mb-2">Amenities</h3>
@@ -65,7 +77,6 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
           </ul>
         </div>
 
-        {/* Rating Display */}
         <div className="relative w-40 h-40 flex items-center justify-center">
           <svg width="160" height="160" viewBox="0 0 160 160" className="absolute">
             <circle
@@ -93,11 +104,12 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
               transform="rotate(135,80,80)"
             />
           </svg>
-          <span className="absolute text-4xl font-bold text-black">{studySpace.generalRating}</span>
+          <span className="absolute text-4xl font-bold text-black">
+            {studySpace.generalRating}
+          </span>
         </div>
       </div>
 
-      {/* Featured Review */}
       {studySpace.featuredReview && (
         <>
           <h3 className="text-lg font-semibold mt-4 mb-2">Featured Review</h3>
@@ -112,28 +124,26 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
         </>
       )}
 
-      {/* User Reviews Section - Always rendered */}
-<div className="mt-6">
-  <h3 className="text-lg font-semibold mb-2">User Reviews</h3>
-  <div className="space-y-4 max-h-60 overflow-y-auto">
-    {studySpace.reviews?.length > 0 ? (
-      studySpace.reviews.map((review) => (
-        <div key={review.id} className="border-b pb-4">
-          <div className="flex items-center mb-2">
-            <span className="text-yellow-500">
-              {"⭐".repeat(review.rating)}
-            </span>
-          </div>
-          <p className="text-gray-700">{review.reviewText}</p>
+      <div className="mt-6">
+        <h3 className="text-lg font-semibold mb-2">User Reviews</h3>
+        <div className="space-y-4 max-h-60 overflow-y-auto">
+          {studySpace.reviews?.length > 0 ? (
+            studySpace.reviews.map((review) => (
+              <div key={review.id} className="border-b pb-4">
+                <div className="flex items-center mb-2">
+                  <span className="text-yellow-500">
+                    {"⭐".repeat(review.rating)}
+                  </span>
+                </div>
+                <p className="text-gray-700">{review.reviewText}</p>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-500 italic">Be the first to add a review.</p>
+          )}
         </div>
-      ))
-    ) : (
-      <p className="text-gray-500 italic">Be the first to add a review.</p>
-    )}
-  </div>
-</div>
+      </div>
 
-      {/* Review Form */}
       {!showReviewForm ? (
         <button
           onClick={() => setShowReviewForm(true)}
