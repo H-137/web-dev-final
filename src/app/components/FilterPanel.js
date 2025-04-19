@@ -48,9 +48,26 @@ const FilterPanel = ({ filters, setFilters }) => {
     }));
   };
 
+  const handleClearAllFilters = () => {
+    setFilters({
+      minRating: 0,
+      noiseLevels: [],
+      seating: [],
+      amenities: []
+    });
+  };
+
   return (
     <div className="absolute top-4 left-32 bg-white p-4 rounded-lg shadow-lg z-10 w-64 text-black">
-      <h2 className="text-lg font-bold mb-4">Filter Study Spaces</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-bold">Filter Study Spaces</h2>
+        <button 
+          onClick={handleClearAllFilters}
+          className="text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-1 px-2 rounded transition-colors duration-200"
+        >
+          Clear All
+        </button>
+      </div>
 
       {/* Rating Slider */}
       <div className="mb-4">

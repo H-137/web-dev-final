@@ -1,4 +1,3 @@
-// ======= Menu.js =======
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -37,7 +36,6 @@ function Menu({ onClose, onAddLocation, initialCoordinates, onRequestMapClick })
     noiseLevel: '',
     seating: [],
     generalRating: 50,
-    featuredReview: '',
     amenities: []
   });
 
@@ -94,7 +92,6 @@ function Menu({ onClose, onAddLocation, initialCoordinates, onRequestMapClick })
       amenities: formData.amenities.map(name => ({ name })),
       noiseLevel: formData.noiseLevel,
       seating: formData.seating.join(', '),
-      featuredReview: formData.featuredReview,
       generalRating: Number(formData.generalRating)
     };
 
@@ -141,7 +138,6 @@ function Menu({ onClose, onAddLocation, initialCoordinates, onRequestMapClick })
           </div>
 
           <input name="description" placeholder="Description" value={formData.description} onChange={handleChange} className="border p-2 rounded" />
-          <input name="featuredReview" placeholder="Featured Review" value={formData.featuredReview} onChange={handleChange} className="border p-2 rounded" />
 
           <div className="mb-4">
             <label className="block text-sm font-medium mb-1">Rating: {formData.generalRating}%</label>
