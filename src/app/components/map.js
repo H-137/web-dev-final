@@ -55,15 +55,14 @@ const OpenLayersMap = () => {
 
   useEffect(() => {
     const saved = localStorage.getItem("darkMode");
-    const prefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)"
-    ).matches;
-    const enabled = saved === "true" || (saved === null && prefersDark);
-
+  
+    // Only enable dark mode if user explicitly set it
+    const enabled = saved === "true";
+  
     setDarkMode(enabled);
     document.documentElement.classList.toggle("dark", enabled);
   }, []);
-
+  
   const toggleDarkMode = () => {
     setDarkMode((prev) => {
       const next = !prev;
@@ -71,7 +70,8 @@ const OpenLayersMap = () => {
       localStorage.setItem("darkMode", next);
       return next;
     });
-  };  
+  };
+  
 
   const lightBaseLayerRef = useRef(
     new TileLayer({
