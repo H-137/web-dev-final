@@ -382,7 +382,7 @@ const OpenLayersMap = () => {
   return (
     <>
       {loading && (
-        <div className="fixed inset-0 bg-white dark:bg-black z-50 flex items-center justify-center text-black dark:text-white transition-opacity duration-300">
+        <div className="fixed inset-0 bg-white dark:bg-black z-[1000] flex items-center justify-center text-black dark:text-white transition-opacity duration-300">
           <span className="text-2xl font-bold">Loading...</span>
         </div>
       )}
