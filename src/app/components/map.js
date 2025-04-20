@@ -1,4 +1,3 @@
-// ======= OpenLayersMap.js =======
 import React, { useEffect, useRef, useState } from "react";
 import "ol/ol.css";
 import { Map, View } from "ol";
@@ -61,6 +60,18 @@ const OpenLayersMap = () => {
     awaitingMapClickRef.current = awaitingMapClick;
   }, [awaitingMapClick]);
 
+  // Calculate rating based on reviews
+  const calculateAverageRating = (locationName) => {
+    const reviews = reviewsRef.current[locationName] || [];
+    if (reviews.length === 0) return 0;
+    
+    const sum = reviews.reduce((total, review) => total + review.rating, 0);
+    const average = sum / reviews.length;
+    
+    // Convert from 5-star scale to 100-point scale
+    return Math.round(average * 20);
+  };
+
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -76,7 +87,24 @@ const OpenLayersMap = () => {
           acc[loc].push(review);
           return acc;
         }, {});
-        setLocationsData({ locations });
+        
+        // Update locations with calculated ratings
+        const updatedLocations = locations.map(location => {
+          const locationReviews = groupedReviews[location.name] || [];
+          const hasReviews = locationReviews.length > 0;
+          
+          if (hasReviews) {
+            const sum = locationReviews.reduce((total, review) => total + review.rating, 0);
+            const average = sum / locationReviews.length;
+            // Convert from 5-star scale to 100-point scale
+            const rating = Math.round(average * 20);
+            return { ...location, generalRating: rating };
+          }
+          
+          return location;
+        });
+        
+        setLocationsData({ locations: updatedLocations });
         setReviewsData(groupedReviews);
       } catch (error) {
         console.error("Error loading data:", error);
@@ -127,16 +155,21 @@ const OpenLayersMap = () => {
 
         if (isActive) {
           const locationName = feature.get("name");
+          const locationReviews = reviewsRef.current[locationName] || [];
+          
+          // Calculate current rating based on reviews
+          const calculatedRating = calculateAverageRating(locationName);
+          
           setSelectedSpace({
             name: locationName,
             description: feature.get("description"),
             image: feature.get("image"),
-            generalRating: feature.get("generalRating"),
+            generalRating: calculatedRating,
             amenities: feature.get("amenities"),
             noiseLevel: feature.get("noiseLevel"),
             seating: feature.get("seating"),
             featuredReview: feature.get("featuredReview"),
-            reviews: reviewsRef.current[locationName] || [],
+            reviews: locationReviews,
           });
           setShowSidebar(true);
           setActiveFeatureId(feature.getId());
@@ -153,7 +186,10 @@ const OpenLayersMap = () => {
     vectorSourceRef.current.clear();
     const newFeatures = locationsData.locations
       .filter((location) => {
-        if (location.generalRating < filters.minRating) return false;
+        // Update filtering to use calculated ratings
+        const locationRating = calculateAverageRating(location.name);
+        if (locationRating < filters.minRating) return false;
+        
         if (
           filters.noiseLevels.length > 0 &&
           !filters.noiseLevels.includes(location.noiseLevel)
@@ -161,7 +197,7 @@ const OpenLayersMap = () => {
           return false;
         const locationSeating = Array.isArray(location.seating)
           ? location.seating
-          : [location.seating];
+          : location.seating ? location.seating.split(", ") : [];
         if (
           filters.seating.length > 0 &&
           !filters.seating.some((seat) => locationSeating.includes(seat))
@@ -178,12 +214,15 @@ const OpenLayersMap = () => {
         return true;
       })
       .map((location) => {
+        // Calculate current rating based on reviews for each feature
+        const calculatedRating = calculateAverageRating(location.name);
+        
         const feature = new Feature({
           geometry: new Point(location.coordinates),
           name: location.name,
           description: location.description,
           image: location.image,
-          generalRating: location.generalRating,
+          generalRating: calculatedRating,
           amenities: location.amenities,
           noiseLevel: location.noiseLevel,
           seating: location.seating,
@@ -197,7 +236,7 @@ const OpenLayersMap = () => {
         return feature;
       });
     vectorSourceRef.current.addFeatures(newFeatures);
-  }, [locationsData, filters, activeFeatureId]);
+  }, [locationsData, filters, activeFeatureId, reviewsData]);
 
   const handleAddReview = (locationName, newReview) => {
     const reviewWithId = {
@@ -205,6 +244,8 @@ const OpenLayersMap = () => {
       id: `rev-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       date: new Date().toISOString(),
     };
+    
+    // Update reviews data
     const updatedReviews = {
       ...reviewsRef.current,
       [locationName]: [
@@ -213,12 +254,35 @@ const OpenLayersMap = () => {
       ],
     };
     setReviewsData(updatedReviews);
+    
+    // Calculate new rating
+    const newRating = calculateAverageRating(locationName);
+    
+    // Update selected space if it's currently shown
     if (selectedSpace && selectedSpace.name === locationName) {
       setSelectedSpace((prev) => ({
         ...prev,
         reviews: updatedReviews[locationName],
+        generalRating: newRating
       }));
     }
+    
+    // Update the location data with the new rating
+    setLocationsData(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        locations: prev.locations.map(loc => {
+          if (loc.name === locationName) {
+            return {
+              ...loc,
+              generalRating: newRating
+            };
+          }
+          return loc;
+        })
+      };
+    });
   };
 
   const handleCloseSidebar = () => {
@@ -241,10 +305,20 @@ const OpenLayersMap = () => {
   };
 
   const handleAddLocation = (newLocation) => {
+    // Add the new location
     setLocationsData((prev) => ({
       ...prev,
       locations: [...prev.locations, newLocation],
     }));
+    
+    // Add the initial review to the reviews data
+    if (newLocation.reviews && newLocation.reviews.length > 0) {
+      const initialReview = newLocation.reviews[0];
+      setReviewsData(prev => ({
+        ...prev,
+        [newLocation.name]: [initialReview]
+      }));
+    }
   };
 
   const handleMapPickMode = () => {
