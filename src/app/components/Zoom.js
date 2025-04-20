@@ -1,49 +1,39 @@
-import { useEffect } from "react";
+import React from "react";
 
 const ZoomControls = ({ mapInstance }) => {
-  useEffect(() => {
-    if (typeof document === "undefined") return;
+  const handleZoom = (delta) => {
+    if (mapInstance.current) {
+      const view = mapInstance.current.getView();
+      view.animate({ zoom: view.getZoom() + delta, duration: 300 });
+    }
+  };
 
-    const zoomInButton = document.createElement("button");
-    zoomInButton.innerHTML = "+";
-    zoomInButton.className = "custom-zoom-in absolute top-18 left-4 bg-white p-2 rounded shadow";
-
-    const zoomOutButton = document.createElement("button");
-    zoomOutButton.innerHTML = "−";
-    zoomOutButton.className = "custom-zoom-out absolute top-30 left-4 bg-white p-2 rounded shadow";
-
-    const zoomIn = () => {
-      if (mapInstance.current) {
-        const view = mapInstance.current.getView();
-        view.animate({ zoom: view.getZoom() + 1, duration: 300 });
-      }
-    };
-
-    const zoomOut = () => {
-      if (mapInstance.current) {
-        const view = mapInstance.current.getView();
-        view.animate({ zoom: view.getZoom() - 1, duration: 300 });
-      }
-    };
-
-    zoomInButton.addEventListener("click", zoomIn);
-    zoomOutButton.addEventListener("click", zoomOut);
-
-    const zoomControlsContainer = document.createElement("div");
-    zoomControlsContainer.className = "custom-zoom-controls";
-    zoomControlsContainer.appendChild(zoomInButton);
-    zoomControlsContainer.appendChild(zoomOutButton);
-
-    document.body.appendChild(zoomControlsContainer);
-
-    return () => {
-      zoomInButton.removeEventListener("click", zoomIn);
-      zoomOutButton.removeEventListener("click", zoomOut);
-      zoomControlsContainer.remove();
-    };
-  }, [mapInstance]);
-
-  return null;
+  return (
+    <div className="absolute top-20 left-4 z-50 flex flex-col space-y-2">
+      <button
+        onClick={() => handleZoom(+1)}
+        className="w-10 h-10 flex items-center justify-center text-lg font-bold
+                   bg-white dark:bg-black text-black dark:text-white
+                   hover:bg-gray-100 dark:hover:bg-[#111]
+                   rounded-full shadow transition
+                   focus:outline-none"
+        aria-label="Zoom In"
+      >
+        +
+      </button>
+      <button
+        onClick={() => handleZoom(-1)}
+        className="w-10 h-10 flex items-center justify-center text-lg font-bold
+                   bg-white dark:bg-black text-black dark:text-white
+                   hover:bg-gray-100 dark:hover:bg-[#111]
+                   rounded-full shadow transition
+                   focus:outline-none"
+        aria-label="Zoom Out"
+      >
+        −
+      </button>
+    </div>
+  );
 };
 
 export default ZoomControls;

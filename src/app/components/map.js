@@ -11,7 +11,7 @@ import Style from "ol/style/Style";
 import Icon from "ol/style/Icon";
 import Sidebar from "./Sidebar";
 import FilterPanel from "./FilterPanel";
-import { FaFilter, FaTimes, FaEdit } from "react-icons/fa";
+import { FaFilter, FaTimes, FaEdit, FaMoon } from "react-icons/fa";
 import ZoomControls from "./Zoom";
 import Menu from "./Menu";
 
@@ -51,6 +51,54 @@ const OpenLayersMap = () => {
     seating: [],
   });
   const [loading, setLoading] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("darkMode");
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    ).matches;
+    const enabled = saved === "true" || (saved === null && prefersDark);
+
+    setDarkMode(enabled);
+    document.documentElement.classList.toggle("dark", enabled);
+  }, []);
+
+  const toggleDarkMode = () => {
+    setDarkMode((prev) => {
+      const next = !prev;
+      document.documentElement.classList.toggle("dark", next);
+      localStorage.setItem("darkMode", next);
+      return next;
+    });
+  };  
+
+  const lightBaseLayerRef = useRef(
+    new TileLayer({
+      visible: true,
+      source: new XYZ({
+        url: "https://{a-d}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+      }),
+    })
+  );
+  
+  const darkBaseLayerRef = useRef(
+    new TileLayer({
+      visible: false,
+      source: new XYZ({
+        url: "https://{a-d}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+      }),
+    })
+  );
+  
+  useEffect(() => {
+    if (!mapInstance.current) return;
+  
+    lightBaseLayerRef.current.setVisible(!darkMode);
+    darkBaseLayerRef.current.setVisible(darkMode);
+  }, [darkMode]);
+  
+  
 
   useEffect(() => {
     reviewsRef.current = reviewsData;
@@ -64,10 +112,10 @@ const OpenLayersMap = () => {
   const calculateAverageRating = (locationName) => {
     const reviews = reviewsRef.current[locationName] || [];
     if (reviews.length === 0) return 0;
-    
+
     const sum = reviews.reduce((total, review) => total + review.rating, 0);
     const average = sum / reviews.length;
-    
+
     // Convert from 5-star scale to 100-point scale
     return Math.round(average * 20);
   };
@@ -87,23 +135,26 @@ const OpenLayersMap = () => {
           acc[loc].push(review);
           return acc;
         }, {});
-        
+
         // Update locations with calculated ratings
-        const updatedLocations = locations.map(location => {
+        const updatedLocations = locations.map((location) => {
           const locationReviews = groupedReviews[location.name] || [];
           const hasReviews = locationReviews.length > 0;
-          
+
           if (hasReviews) {
-            const sum = locationReviews.reduce((total, review) => total + review.rating, 0);
+            const sum = locationReviews.reduce(
+              (total, review) => total + review.rating,
+              0
+            );
             const average = sum / locationReviews.length;
             // Convert from 5-star scale to 100-point scale
             const rating = Math.round(average * 20);
             return { ...location, generalRating: rating };
           }
-          
+
           return location;
         });
-        
+
         setLocationsData({ locations: updatedLocations });
         setReviewsData(groupedReviews);
       } catch (error) {
@@ -120,14 +171,14 @@ const OpenLayersMap = () => {
       mapInstance.current = new Map({
         target: mapRef.current,
         layers: [
-          new TileLayer({
-            source: new XYZ({
-              url: "https://{a-d}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-            }),
-          }),
+          lightBaseLayerRef.current,
+          darkBaseLayerRef.current,
           vectorLayerRef.current,
         ],
-        view: new View({ center: [-7922441.18, 5211368.96], zoom: 16 }),
+        view: new View({
+          center: [-7922441.18, 5211368.96],
+          zoom: 16,
+        }),
         controls: [],
       });
 
@@ -156,10 +207,10 @@ const OpenLayersMap = () => {
         if (isActive) {
           const locationName = feature.get("name");
           const locationReviews = reviewsRef.current[locationName] || [];
-          
+
           // Calculate current rating based on reviews
           const calculatedRating = calculateAverageRating(locationName);
-          
+
           setSelectedSpace({
             name: locationName,
             description: feature.get("description"),
@@ -189,7 +240,7 @@ const OpenLayersMap = () => {
         // Update filtering to use calculated ratings
         const locationRating = calculateAverageRating(location.name);
         if (locationRating < filters.minRating) return false;
-        
+
         if (
           filters.noiseLevels.length > 0 &&
           !filters.noiseLevels.includes(location.noiseLevel)
@@ -197,7 +248,9 @@ const OpenLayersMap = () => {
           return false;
         const locationSeating = Array.isArray(location.seating)
           ? location.seating
-          : location.seating ? location.seating.split(", ") : [];
+          : location.seating
+            ? location.seating.split(", ")
+            : [];
         if (
           filters.seating.length > 0 &&
           !filters.seating.some((seat) => locationSeating.includes(seat))
@@ -216,7 +269,7 @@ const OpenLayersMap = () => {
       .map((location) => {
         // Calculate current rating based on reviews for each feature
         const calculatedRating = calculateAverageRating(location.name);
-        
+
         const feature = new Feature({
           geometry: new Point(location.coordinates),
           name: location.name,
@@ -244,7 +297,7 @@ const OpenLayersMap = () => {
       id: `rev-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       date: new Date().toISOString(),
     };
-    
+
     // Update reviews data
     const updatedReviews = {
       ...reviewsRef.current,
@@ -254,33 +307,33 @@ const OpenLayersMap = () => {
       ],
     };
     setReviewsData(updatedReviews);
-    
+
     // Calculate new rating
     const newRating = calculateAverageRating(locationName);
-    
+
     // Update selected space if it's currently shown
     if (selectedSpace && selectedSpace.name === locationName) {
       setSelectedSpace((prev) => ({
         ...prev,
         reviews: updatedReviews[locationName],
-        generalRating: newRating
+        generalRating: newRating,
       }));
     }
-    
+
     // Update the location data with the new rating
-    setLocationsData(prev => {
+    setLocationsData((prev) => {
       if (!prev) return prev;
       return {
         ...prev,
-        locations: prev.locations.map(loc => {
+        locations: prev.locations.map((loc) => {
           if (loc.name === locationName) {
             return {
               ...loc,
-              generalRating: newRating
+              generalRating: newRating,
             };
           }
           return loc;
-        })
+        }),
       };
     });
   };
@@ -310,13 +363,13 @@ const OpenLayersMap = () => {
       ...prev,
       locations: [...prev.locations, newLocation],
     }));
-    
+
     // Add the initial review to the reviews data
     if (newLocation.reviews && newLocation.reviews.length > 0) {
       const initialReview = newLocation.reviews[0];
-      setReviewsData(prev => ({
+      setReviewsData((prev) => ({
         ...prev,
-        [newLocation.name]: [initialReview]
+        [newLocation.name]: [initialReview],
       }));
     }
   };
@@ -329,35 +382,45 @@ const OpenLayersMap = () => {
   return (
     <>
       {loading && (
-        <div className="fixed inset-0 bg-white z-50 flex items-center justify-center text-black transition-opacity duration-300">
+        <div className="fixed inset-0 bg-white dark:bg-black z-50 flex items-center justify-center text-black dark:text-white transition-opacity duration-300">
           <span className="text-2xl font-bold">Loading...</span>
         </div>
       )}
-
+  
       <div ref={mapRef} className="absolute top-0 left-0 w-full h-full" />
       <ZoomControls mapInstance={mapInstance} />
-
+  
       <button
         onClick={() => setShowMenu(true)}
-        className="absolute top-4 left-4 bg-white p-3 rounded-lg shadow-lg z-10 hover:bg-gray-100 transition-colors"
+        className="absolute top-4 left-4 bg-white dark:bg-black dark:text-white p-3 rounded-lg shadow-lg z-10 hover:bg-gray-100 dark:hover:bg-[#111111] transition-colors"
         aria-label="Add location"
       >
-        <FaEdit size={20} className="text-black pl-1" />
+        <FaEdit size={20} className="text-black dark:text-white pl-1" />
       </button>
-
+  
+      <button
+        onClick={toggleDarkMode}
+        className="absolute bottom-4 left-4 bg-white dark:bg-black dark:text-white p-3 rounded-lg shadow-lg z-10 hover:bg-gray-100 dark:hover:bg-[#111111] transition-colors"
+        aria-label="Toggle dark mode"
+      >
+        <FaMoon size={20} className="text-black dark:text-white pl-1" />
+      </button>
+  
       <button
         onClick={() => setShowFilters(!showFilters)}
-        className="absolute top-4 left-18 bg-white p-3 rounded-lg shadow-lg z-10 hover:bg-gray-100 transition-colors"
+        className="absolute top-4 left-18 bg-white dark:bg-black dark:text-white p-3 rounded-lg shadow-lg z-10 hover:bg-gray-100 dark:hover:bg-[#111111] transition-colors"
         aria-label="Toggle filters"
       >
         {showFilters ? (
-          <FaTimes size={20} className="text-black" />
+          <FaTimes size={20} className="text-black dark:text-white" />
         ) : (
-          <FaFilter size={20} className="text-black" />
+          <FaFilter size={20} className="text-black dark:text-white" />
         )}
       </button>
-
-      {showFilters && <FilterPanel filters={filters} setFilters={setFilters} />}
+  
+      {showFilters && (
+        <FilterPanel filters={filters} setFilters={setFilters} />
+      )}
       {showSidebar && (
         <Sidebar
           studySpace={selectedSpace}
@@ -375,6 +438,7 @@ const OpenLayersMap = () => {
       )}
     </>
   );
+  
 };
 
 export default OpenLayersMap;
