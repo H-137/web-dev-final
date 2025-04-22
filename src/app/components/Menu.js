@@ -21,6 +21,7 @@ function Menu({
     { value: "Desk Chairs", label: "Desk Chairs" },
     { value: "Cushioned Chairs", label: "Cushioned Chairs" },
     { value: "Couches", label: "Couches" },
+    { value: "Booths", label: "Booths" },
   ];
 
   const amenitiesOptions = [
@@ -32,7 +33,8 @@ function Menu({
     { value: "Historical Site", label: "Historical Site" },
     { value: "Conference Rooms", label: "Conference Rooms" },
     { value: "Cafeteria Nearby", label: "Cafeteria Nearby" },
-    { value: "Whiteboards", label: "Whiteboards" },
+    { value: "Desks", label: "Desks" },
+    { value: "Tables", label: "Tables" },
   ];
 
   const [formData, setFormData] = useState({
