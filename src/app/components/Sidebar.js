@@ -10,7 +10,8 @@ import {
   FaLandmark, 
   FaUsers, 
   FaUtensils,
-  FaLaptop
+  FaLaptop,
+  FaChair
 } from "react-icons/fa";
 import { BsTable } from "react-icons/bs";
 import Image from "next/image";
@@ -26,7 +27,7 @@ const amenityIcons = {
   "Conference Rooms": <FaUsers className="text-indigo-500 text-lg" />,
   "Cafeteria Nearby": <FaUtensils className="text-orange-500 text-lg" />,
   "Desks": <FaLaptop className="text-teal-500 text-lg" />,
-  "Tables": <BsTable className="text-pink-500 text-lg font-bold" />
+  "Tables": <FaChair className="text-pink-500 text-lg font-bold" />
 };
 
 const Sidebar = ({ studySpace, onClose, onAddReview }) => {
