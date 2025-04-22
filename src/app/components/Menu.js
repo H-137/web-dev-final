@@ -241,6 +241,28 @@ function Menu({
       return () => observer.disconnect();
     }, []);
 
+        const fileInputRef = useRef(null);
+        const [selectedFile, setSelectedFile] = useState(null);
+        const [previewUrl, setPreviewUrl] = useState(null);
+
+        const handleFileChange = (e) => {
+          const file = e.target.files[0];
+          setSelectedFile(file);
+
+          // Show preview if it's an image
+          if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onloadend = () => setPreviewUrl(reader.result);
+            reader.readAsDataURL(file);
+          } else {
+            setPreviewUrl(null);
+          }
+        };
+
+        const triggerFileSelect = () => {
+          fileInputRef.current?.click();
+        };
+
   return (
     <div className="fixed top-0 left-0 w-full h-full bg-gray-500/30 flex items-center justify-center z-50 p-4">
       <div className="w-full max-w-lg bg-white dark:bg-black text-black dark:text-white p-4 md:p-6 rounded-lg shadow-lg overflow-y-auto max-h-[90vh] z-10">
@@ -271,7 +293,36 @@ function Menu({
           </div>
   
           <input name="description" placeholder="Description" value={formData.description} onChange={handleChange} className="border p-2 rounded dark:bg-[#1a1a1a] dark:border-[#333] dark:text-white" />
-  
+
+          <div className="p-6">
+                <button
+                  onClick={triggerFileSelect}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-xl shadow hover:bg-blue-700 transition"
+                >
+                  Select an Image
+                </button>
+
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  className="absolute right-[-99999px]"
+                />
+
+                {selectedFile && (
+                  <div className="mt-4 p-4 border rounded bg-gray-100 max-w-xs">
+                    {previewUrl && (
+                      <img
+                        src={previewUrl}
+                        alt="Preview"
+                        className="mt-2 max-w-[300px] max-h-[300px] w-auto h-auto rounded-lg shadow"
+                      />
+                    )}
+                   <p>{selectedFile.name}</p>
+                  </div>
+                )}
+              </div>
+
           <div className="mb-2">
             <label className="block text-sm font-medium mb-1">Your Rating: {formData.rating > 0 ? formData.rating.toFixed(1) : ""}</label>
             <StarRating />
