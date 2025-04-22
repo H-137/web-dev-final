@@ -81,6 +81,23 @@ function Menu({
   // Star Rating Component for Menu
   const StarRating = () => {
     const starRefs = useRef([]);
+    
+    // Use a global document event to listen for any mouse movement 
+    // anywhere in the document to reset the hover state
+    useEffect(() => {
+      // A simple function to reset the hover rating
+      const resetHoverRating = () => {
+        setHoverRating(0);
+      };
+      
+      // Add mouseout event on document, which will trigger when mouse leaves any element
+      document.addEventListener('mouseout', resetHoverRating);
+      
+      // Cleanup
+      return () => {
+        document.removeEventListener('mouseout', resetHoverRating);
+      };
+    }, []);
 
     // Handle hover on star
     const handleStarHover = (index, event) => {
@@ -121,7 +138,6 @@ function Menu({
           ref={(el) => (starRefs.current[i] = el)}
           className="cursor-pointer relative"
           onMouseMove={(e) => handleStarHover(i, e)}
-          onMouseLeave={() => setHoverRating(0)}
           onClick={(e) => handleStarClick(i, e)}
         >
           <FaRegStar className="text-gray-300 text-2xl" />
