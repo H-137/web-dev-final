@@ -1,7 +1,33 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+import { 
+  FaWater, 
+  FaVolumeDown, 
+  FaDoorOpen, 
+  FaProjectDiagram, 
+  FaChalkboardTeacher,
+  FaLandmark, 
+  FaUsers, 
+  FaUtensils,
+  FaLaptop
+} from "react-icons/fa";
+import { BsTable } from "react-icons/bs";
 import Image from "next/image";
+
+// Map amenities to icons
+const amenityIcons = {
+  "Water Fountain": <FaWater className="text-blue-500 text-lg" />,
+  "Quiet Zone": <FaVolumeDown className="text-purple-500 text-lg" />,
+  "Study Rooms": <FaDoorOpen className="text-green-500 text-lg" />,
+  "Projector": <FaProjectDiagram className="text-red-500 text-lg" />,
+  "Classrooms": <FaChalkboardTeacher className="text-yellow-500 text-lg" />,
+  "Historical Site": <FaLandmark className="text-gray-500 text-lg" />,
+  "Conference Rooms": <FaUsers className="text-indigo-500 text-lg" />,
+  "Cafeteria Nearby": <FaUtensils className="text-orange-500 text-lg" />,
+  "Desks": <FaLaptop className="text-teal-500 text-lg" />,
+  "Tables": <BsTable className="text-pink-500 text-lg font-bold" />
+};
 
 const Sidebar = ({ studySpace, onClose, onAddReview }) => {
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -170,7 +196,10 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
           <h3 className="text-lg font-semibold mb-2">Amenities</h3>
           <ul className="list-none space-y-2">
             {studySpace.amenities?.map((amenity, index) => (
-              <li key={index} className="flex justify-between items-center">
+              <li key={index} className="flex items-center space-x-2">
+                <span className="w-6 h-6 flex items-center justify-center">
+                  {amenityIcons[amenity.name]}
+                </span>
                 <span>{amenity.name}</span>
               </li>
             ))}
