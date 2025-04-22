@@ -392,7 +392,7 @@ const OpenLayersMap = () => {
   
       <button
         onClick={() => setShowMenu(true)}
-        className="absolute top-4 left-4 bg-white dark:bg-black dark:text-white p-3 rounded-lg shadow-lg z-10 hover:bg-gray-100 dark:hover:bg-[#111111] transition-colors"
+        className="absolute top-4 left-4 bg-white dark:bg-black dark:text-white p-3 rounded-lg shadow-lg z-10 hover:bg-gray-100 dark:hover:bg-[#111111] transition-colors dark:border-[#333333] dark:border-2"
         aria-label="Add location"
       >
         <FaEdit size={20} className="text-black dark:text-white pl-1" />
@@ -400,7 +400,7 @@ const OpenLayersMap = () => {
   
       <button
         onClick={toggleDarkMode}
-        className="absolute bottom-4 left-4 bg-white dark:bg-black dark:text-white p-3 rounded-lg shadow-lg z-10 hover:bg-gray-100 dark:hover:bg-[#111111] transition-colors"
+        className="absolute bottom-4 left-4 bg-white dark:bg-black dark:text-white p-3 rounded-lg shadow-lg z-10 hover:bg-gray-100 dark:hover:bg-[#111111] transition-colors dark:border-[#333333] dark:border-2"
         aria-label="Toggle dark mode"
       >
         <FaMoon size={20} className="text-black dark:text-white pl-1" />
@@ -408,7 +408,7 @@ const OpenLayersMap = () => {
   
       <button
         onClick={() => setShowFilters(!showFilters)}
-        className="absolute top-4 left-18 bg-white dark:bg-black dark:text-white p-3 rounded-lg shadow-lg z-10 hover:bg-gray-100 dark:hover:bg-[#111111] transition-colors"
+        className="absolute top-4 left-18 bg-white dark:bg-black dark:text-white p-3 rounded-lg shadow-lg z-10 hover:bg-gray-100 dark:hover:bg-[#111111] transition-colors dark:border-[#333333] dark:border-2"
         aria-label="Toggle filters"
       >
         {showFilters ? (

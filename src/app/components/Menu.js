@@ -264,8 +264,8 @@ function Menu({
         };
 
   return (
-    <div className="fixed top-0 left-0 w-full h-full bg-gray-500/30 flex items-center justify-center z-50 p-4">
-      <div className="w-full max-w-lg bg-white dark:bg-black text-black dark:text-white p-4 md:p-6 rounded-lg shadow-lg overflow-y-auto max-h-[90vh] z-10">
+    <div className="fixed top-0 left-0 w-full h-full bg-gray-500/30 flex items-center justify-center z-50 p-4 ">
+      <div className="w-full max-w-lg bg-white dark:bg-black text-black dark:text-white p-4 md:p-6 rounded-lg shadow-lg overflow-y-auto max-h-[90vh] z-10 dark:border-[#333333] dark:border-2">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl md:text-2xl font-bold mb-0">Add Location</h2>
           <button

@@ -73,7 +73,7 @@ const FilterPanel = ({ filters, setFilters }) => {
   };
 
   return (
-    <div className="absolute top-4 left-32 bg-white dark:bg-black text-black dark:text-white p-4 rounded-lg shadow-lg z-10 w-64">
+    <div className="absolute top-4 left-32 bg-white dark:bg-black text-black dark:text-white p-4 rounded-lg shadow-lg z-10 w-64 dark:border-[#333333] dark:border-2">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-bold">Filter Study Spaces</h2>
         <button

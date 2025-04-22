@@ -16,7 +16,7 @@ const ZoomControls = ({ mapInstance }) => {
                    bg-white dark:bg-black text-black dark:text-white
                    hover:bg-gray-100 dark:hover:bg-[#111]
                    rounded-full shadow transition
-                   focus:outline-none"
+                   focus:outline-none dark:border-[#333333] dark:border-2"
         aria-label="Zoom In"
       >
         +
@@ -27,7 +27,7 @@ const ZoomControls = ({ mapInstance }) => {
                    bg-white dark:bg-black text-black dark:text-white
                    hover:bg-gray-100 dark:hover:bg-[#111]
                    rounded-full shadow transition
-                   focus:outline-none"
+                   focus:outline-none dark:border-[#333333] dark:border-2"
         aria-label="Zoom Out"
       >
         −

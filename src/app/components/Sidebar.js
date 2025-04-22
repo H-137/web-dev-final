@@ -169,7 +169,7 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
   if (!studySpace) return null;
 
   return (
-     <div className="fixed top-0 right-0 w-1/2 md:w-2/5 lg:w-1/3 transition-all duration-300 ease-in-out bg-white dark:bg-black text-black dark:text-white p-6 box-border rounded-l-lg shadow-lg overflow-y-auto z-10 m-5 mb-0 max-h-[95vh]">
+     <div className="fixed top-0 right-0 w-1/2 md:w-2/5 lg:w-1/3 transition-all duration-300 ease-in-out bg-white dark:bg-black text-black dark:text-white p-6 box-border rounded-l-lg shadow-lg overflow-y-auto z-10 m-5 mb-0 max-h-[95vh] dark:border-[#333333] dark:border-2">
       <div className="flex justify-between items-center mb-0">
         <h2 className="text-4xl font-bold mb-0">{studySpace.name}</h2>
         <button
