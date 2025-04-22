@@ -89,6 +89,22 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
   // Interactive star rating component
   const StarRating = () => {
     const starRefs = useRef([]);
+    
+    // Add global document event listener to reset hover rating
+    useEffect(() => {
+      // A simple function to reset the hover rating
+      const resetHoverRating = () => {
+        setHoverRating(0);
+      };
+      
+      // Add mouseout event on document, which will trigger when mouse leaves any element
+      document.addEventListener('mouseout', resetHoverRating);
+      
+      // Cleanup
+      return () => {
+        document.removeEventListener('mouseout', resetHoverRating);
+      };
+    }, []);
 
     // Handle hover on star
     const handleStarHover = (index, event) => {
@@ -129,7 +145,6 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
           ref={(el) => (starRefs.current[i] = el)}
           className="cursor-pointer relative"
           onMouseMove={(e) => handleStarHover(i, e)}
-          onMouseLeave={() => setHoverRating(0)}
           onClick={(e) => handleStarClick(i, e)}
         >
           <FaRegStar className="text-gray-300 text-2xl" />
