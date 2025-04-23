@@ -35,6 +35,8 @@ function Menu({
     { value: "Cafeteria Nearby", label: "Cafeteria Nearby" },
     { value: "Desks", label: "Desks" },
     { value: "Tables", label: "Tables" },
+    { value: "Printer", label: "Printer" },
+    { value: "Whiteboard", label: "Whiteboard" },
   ];
 
   const [formData, setFormData] = useState({
