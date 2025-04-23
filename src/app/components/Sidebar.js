@@ -299,13 +299,13 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
           </div>
   
           <div className="flex space-x-2">
-            <button
-              type="submit"
-              className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition"
-              disabled={!reviewText || rating === 0}
-            >
-              Submit
-            </button>
+          <button
+  type="submit"
+  className="bg-[#98002E] text-white px-4 py-2 rounded-md hover:bg-[#7a0025] transition"
+  disabled={!reviewText || rating === 0}
+>
+  Submit
+</button>
             <button
               type="button"
               onClick={() => {
