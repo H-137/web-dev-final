@@ -203,7 +203,7 @@ function Menu({
       description: formData.description,
       otherData: `Additional info about ${formData.name}.`,
       location: "Boston College",
-      image: "",
+      // image: "",
       amenities: formData.amenities.map((name) => ({ name })),
       noiseLevel: formData.noiseLevel,
       seating: formData.seating.join(", "),
@@ -257,33 +257,33 @@ function Menu({
     return () => observer.disconnect();
   }, []);
 
-  const fileInputRef = useRef(null);
-  const [selectedFile, setSelectedFile] = useState(null);
+  // const fileInputRef = useRef(null);
+  // const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setSelectedFile(file);
+  // const handleFileChange = (e) => {
+  //   const file = e.target.files[0];
+  //   setSelectedFile(file);
 
-    // Show preview if it's an image
-    if (file && file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onloadend = () => setPreviewUrl(reader.result);
-      reader.readAsDataURL(file);
-    } else {
-      setPreviewUrl(null);
-    }
-  };
+  //   // Show preview if it's an image
+  //   if (file && file.type.startsWith("image/")) {
+  //     const reader = new FileReader();
+  //     reader.onloadend = () => setPreviewUrl(reader.result);
+  //     reader.readAsDataURL(file);
+  //   } else {
+  //     setPreviewUrl(null);
+  //   }
+  // };
 
-  const handleFileRemove = () => {
-    setSelectedFile(null);
-    setPreviewUrl(null);
-    fileInputRef.current.value = null; // Clear the file input
-  };
+  // const handleFileRemove = () => {
+  //   setSelectedFile(null);
+  //   setPreviewUrl(null);
+  //   fileInputRef.current.value = null; // Clear the file input
+  // };
 
-  const triggerFileSelect = () => {
-    fileInputRef.current?.click();
-  };
+  // const triggerFileSelect = () => {
+  //   fileInputRef.current?.click();
+  // };
 
   return (
     <div className="fixed top-0 left-0 w-full h-full bg-gray-500/30 flex items-center justify-center z-50 p-4 ">
@@ -344,7 +344,7 @@ function Menu({
             className="border p-2 rounded dark:bg-[#1a1a1a] dark:border-[#333] dark:text-white"
           />
 
-          <div className="flex flex-row width-full justify-between items-center">
+          {/* <div className="flex flex-row width-full justify-between items-center">
             <button
               onClick={triggerFileSelect}
               className="bg-[#98002E] text-white px-4 py-2 rounded-xl shadow hover:bg-[#7a0025] transition"
@@ -370,14 +370,14 @@ function Menu({
             ><path d="M18 6L6 18M6 6l12 12" /></svg>
               </button>
             )}
-          </div>
+          </div> 
           <div className="p-6 flex flex-col items-center justify-center bg-gr-100 dark:bg-[#111] rounded-lg shadow-md">
-            <input
+            {/* <input
               type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
+              // ref={fileInputRef}
+              // onChange={handleFileChange}
               className="absolute right-[-99999px]"
-            />
+            /> 
 
             {selectedFile && (
               <div className="mt-4 p-4 border rounded bg-gray-100 max-w-xs dark:bg-[#111] dark:border-[#333]">
@@ -391,7 +391,7 @@ function Menu({
                 <p>{selectedFile.name}</p>
               </div>
             )}
-          </div>
+          </div> */}
 
           <div className="mb-2">
             <label className="block text-sm font-medium mb-1">
