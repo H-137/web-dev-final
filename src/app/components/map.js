@@ -14,6 +14,8 @@ import FilterPanel from "./FilterPanel";
 import { FaFilter, FaTimes, FaEdit, FaMoon } from "react-icons/fa";
 import ZoomControls from "./Zoom";
 import Menu from "./Menu";
+import { toLonLat } from "ol/proj";
+
 
 const styles = {
   active: new Style({
@@ -55,14 +57,14 @@ const OpenLayersMap = () => {
 
   useEffect(() => {
     const saved = localStorage.getItem("darkMode");
-  
+
     // Only enable dark mode if user explicitly set it
     const enabled = saved === "true";
-  
+
     setDarkMode(enabled);
     document.documentElement.classList.toggle("dark", enabled);
   }, []);
-  
+
   const toggleDarkMode = () => {
     setDarkMode((prev) => {
       const next = !prev;
@@ -71,7 +73,6 @@ const OpenLayersMap = () => {
       return next;
     });
   };
-  
 
   const lightBaseLayerRef = useRef(
     new TileLayer({
@@ -81,7 +82,7 @@ const OpenLayersMap = () => {
       }),
     })
   );
-  
+
   const darkBaseLayerRef = useRef(
     new TileLayer({
       visible: false,
@@ -90,15 +91,13 @@ const OpenLayersMap = () => {
       }),
     })
   );
-  
+
   useEffect(() => {
     if (!mapInstance.current) return;
-  
+
     lightBaseLayerRef.current.setVisible(!darkMode);
     darkBaseLayerRef.current.setVisible(darkMode);
   }, [darkMode]);
-  
-  
 
   useEffect(() => {
     reviewsRef.current = reviewsData;
@@ -211,6 +210,9 @@ const OpenLayersMap = () => {
           // Calculate current rating based on reviews
           const calculatedRating = calculateAverageRating(locationName);
 
+          const rawCoordinates = feature.getGeometry().getCoordinates();
+          const lonLat = toLonLat(rawCoordinates);
+
           setSelectedSpace({
             name: locationName,
             description: feature.get("description"),
@@ -221,6 +223,7 @@ const OpenLayersMap = () => {
             seating: feature.get("seating"),
             featuredReview: feature.get("featuredReview"),
             reviews: locationReviews,
+            coordinates: lonLat,
           });
           setShowSidebar(true);
           setActiveFeatureId(feature.getId());
@@ -386,10 +389,10 @@ const OpenLayersMap = () => {
           <span className="text-2xl font-bold">Loading...</span>
         </div>
       )}
-  
+
       <div ref={mapRef} className="absolute top-0 left-0 w-full h-full" />
       <ZoomControls mapInstance={mapInstance} />
-  
+
       <button
         onClick={() => setShowMenu(true)}
         className="absolute top-4 left-4 bg-white dark:bg-black dark:text-white p-3 rounded-lg shadow-lg z-10 hover:bg-gray-100 dark:hover:bg-[#111111] transition-colors dark:border-[#333333] dark:border-2"
@@ -397,7 +400,7 @@ const OpenLayersMap = () => {
       >
         <FaEdit size={20} className="text-black dark:text-white pl-1" />
       </button>
-  
+
       <button
         onClick={toggleDarkMode}
         className="absolute bottom-4 left-4 bg-white dark:bg-black dark:text-white p-3 rounded-lg shadow-lg z-10 hover:bg-gray-100 dark:hover:bg-[#111111] transition-colors dark:border-[#333333] dark:border-2"
@@ -405,7 +408,7 @@ const OpenLayersMap = () => {
       >
         <FaMoon size={20} className="text-black dark:text-white pl-1" />
       </button>
-  
+
       <button
         onClick={() => setShowFilters(!showFilters)}
         className="absolute top-4 left-18 bg-white dark:bg-black dark:text-white p-3 rounded-lg shadow-lg z-10 hover:bg-gray-100 dark:hover:bg-[#111111] transition-colors dark:border-[#333333] dark:border-2"
@@ -417,10 +420,8 @@ const OpenLayersMap = () => {
           <FaFilter size={20} className="text-black dark:text-white" />
         )}
       </button>
-  
-      {showFilters && (
-        <FilterPanel filters={filters} setFilters={setFilters} />
-      )}
+
+      {showFilters && <FilterPanel filters={filters} setFilters={setFilters} />}
       {showSidebar && (
         <Sidebar
           studySpace={selectedSpace}
@@ -438,7 +439,6 @@ const OpenLayersMap = () => {
       )}
     </>
   );
-  
 };
 
 export default OpenLayersMap;
