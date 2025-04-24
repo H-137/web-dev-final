@@ -11,7 +11,9 @@ import {
   FaUsers, 
   FaUtensils,
   FaLaptop,
-  FaChair
+  FaChair,
+  FaPrint,
+  FaMarker,
 } from "react-icons/fa";
 import { BsTable } from "react-icons/bs";
 import Image from "next/image";
@@ -27,7 +29,9 @@ const amenityIcons = {
   "Conference Rooms": <FaUsers className="text-indigo-500 text-lg" />,
   "Cafeteria Nearby": <FaUtensils className="text-orange-500 text-lg" />,
   "Desks": <FaLaptop className="text-teal-500 text-lg" />,
-  "Tables": <FaChair className="text-pink-500 text-lg font-bold" />
+  "Tables": <FaChair className="text-pink-500 text-lg font-bold" />,
+  "Printer": <FaPrint className="text-yellow-800 text-lg" />,
+  "Whiteboard": <FaMarker className="text-rose-500 text-lg" />,
 };
 
 const Sidebar = ({ studySpace, onClose, onAddReview }) => {
