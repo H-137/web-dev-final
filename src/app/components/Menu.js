@@ -37,6 +37,16 @@ function Menu({
     { value: "Tables", label: "Tables" },
   ];
 
+  // Predefined occupancy ranges
+  const occupancyOptions = [
+    { value: "1-5", label: "1-5 people" },
+    { value: "5-10", label: "5-10 people" },
+    { value: "10-20", label: "10-20 people" },
+    { value: "20-30", label: "20-30 people" },
+    { value: "30-50", label: "30-50 people" },
+    { value: "50+", label: "50+ people" },
+  ];
+
   const [formData, setFormData] = useState({
     name: "",
     coordinates: "",
@@ -46,6 +56,10 @@ function Menu({
     rating: 0,
     reviewText: "",
     amenities: [],
+    maxOccupancy: "", // Add maxOccupancy field
+    customMinOccupancy: 1, // For custom range
+    customMaxOccupancy: 10, // For custom range
+    useCustomOccupancy: false, // Toggle between preset and custom
   });
 
   const [hoverRating, setHoverRating] = useState(0);
@@ -64,6 +78,13 @@ function Menu({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleNumberChange = (e) => {
+    const { name, value } = e.target;
+    // Parse to integer and ensure it's not negative
+    const numValue = parseInt(value) >= 0 ? parseInt(value) : 0;
+    setFormData((prev) => ({ ...prev, [name]: numValue }));
+  };
+
   const handleMultiSelectChange = (field, selectedOptions) => {
     setFormData((prev) => ({
       ...prev,
@@ -76,6 +97,16 @@ function Menu({
     setTimeout(() => {
       onRequestMapClick();
     }, 0);
+  };
+
+  // Toggle between preset and custom occupancy ranges
+  const toggleCustomOccupancy = () => {
+    setFormData(prev => ({
+      ...prev,
+      useCustomOccupancy: !prev.useCustomOccupancy,
+      // Reset maxOccupancy when switching to custom
+      maxOccupancy: prev.useCustomOccupancy ? "" : prev.maxOccupancy
+    }));
   };
 
   // Star Rating Component for Menu
@@ -185,6 +216,22 @@ function Menu({
       return;
     }
 
+    // Validate occupancy data
+    let finalOccupancy = formData.maxOccupancy;
+    if (formData.useCustomOccupancy) {
+      // Validate custom occupancy
+      if (formData.customMinOccupancy > formData.customMaxOccupancy) {
+        alert("Minimum occupancy cannot be greater than maximum occupancy.");
+        return;
+      }
+      finalOccupancy = `${formData.customMinOccupancy}-${formData.customMaxOccupancy}`;
+    }
+
+    if (!finalOccupancy && !formData.useCustomOccupancy) {
+      alert("Please select a maximum occupancy range.");
+      return;
+    }
+
     // Create initial review from the creator's rating and review text
     const initialReview = {
       id: `rev-initial-${Date.now()}`,
@@ -207,6 +254,8 @@ function Menu({
       amenities: formData.amenities.map((name) => ({ name })),
       noiseLevel: formData.noiseLevel,
       seating: formData.seating.join(", "),
+      // Add occupancy data
+      maxOccupancy: finalOccupancy,
       // Store creator's rating as initialRating to preserve it
       initialRating: formData.rating,
       // Set generalRating to be the same initially (will be recalculated later when reviews are added)
@@ -257,33 +306,7 @@ function Menu({
     return () => observer.disconnect();
   }, []);
 
-  // const fileInputRef = useRef(null);
-  // const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
-
-  // const handleFileChange = (e) => {
-  //   const file = e.target.files[0];
-  //   setSelectedFile(file);
-
-  //   // Show preview if it's an image
-  //   if (file && file.type.startsWith("image/")) {
-  //     const reader = new FileReader();
-  //     reader.onloadend = () => setPreviewUrl(reader.result);
-  //     reader.readAsDataURL(file);
-  //   } else {
-  //     setPreviewUrl(null);
-  //   }
-  // };
-
-  // const handleFileRemove = () => {
-  //   setSelectedFile(null);
-  //   setPreviewUrl(null);
-  //   fileInputRef.current.value = null; // Clear the file input
-  // };
-
-  // const triggerFileSelect = () => {
-  //   fileInputRef.current?.click();
-  // };
 
   return (
     <div className="fixed top-0 left-0 w-full h-full bg-gray-500/30 flex items-center justify-center z-50 p-4 ">
@@ -344,55 +367,6 @@ function Menu({
             className="border p-2 rounded dark:bg-[#1a1a1a] dark:border-[#333] dark:text-white"
           />
 
-          {/* <div className="flex flex-row width-full justify-between items-center">
-            <button
-              onClick={triggerFileSelect}
-              className="bg-[#98002E] text-white px-4 py-2 rounded-xl shadow hover:bg-[#7a0025] transition"
-            >
-              Select an Image
-            </button>
-
-            {selectedFile && (
-              <button
-                onClick={handleFileRemove}
-                className="mt-2 text-red-500 hover:text-red-700"
-                type="button"
-              >
-                <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-red-500"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            ><path d="M18 6L6 18M6 6l12 12" /></svg>
-              </button>
-            )}
-          </div> 
-          <div className="p-6 flex flex-col items-center justify-center bg-gr-100 dark:bg-[#111] rounded-lg shadow-md">
-            {/* <input
-              type="file"
-              // ref={fileInputRef}
-              // onChange={handleFileChange}
-              className="absolute right-[-99999px]"
-            /> 
-
-            {selectedFile && (
-              <div className="mt-4 p-4 border rounded bg-gray-100 max-w-xs dark:bg-[#111] dark:border-[#333]">
-                {previewUrl && (
-                  <img
-                    src={previewUrl}
-                    alt="Preview"
-                    className="mt-2 max-w-[300px] max-h-[300px] w-auto h-auto rounded-lg shadow"
-                  />
-                )}
-                <p>{selectedFile.name}</p>
-              </div>
-            )}
-          </div> */}
-
           <div className="mb-2">
             <label className="block text-sm font-medium mb-1">
               Your Rating:{" "}
@@ -414,6 +388,71 @@ function Menu({
               rows={3}
               required
             />
+          </div>
+
+          {/* Maximum Occupancy Section */}
+          <div className="mb-2">
+            <div className="flex justify-between items-center mb-2">
+              <label className="block text-sm font-medium">Maximum Occupancy</label>
+              <button
+                type="button"
+                onClick={toggleCustomOccupancy}
+                className="text-sm text-[#98002E] hover:underline"
+              >
+                {formData.useCustomOccupancy ? "Use Preset Ranges" : "Enter Custom Range"}
+              </button>
+            </div>
+            
+            {formData.useCustomOccupancy ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  name="customMinOccupancy"
+                  value={formData.customMinOccupancy}
+                  onChange={handleNumberChange}
+                  min="1"
+                  className="border p-2 rounded w-20 dark:bg-[#1a1a1a] dark:border-[#333] dark:text-white"
+                />
+                <span>to</span>
+                <input
+                  type="number"
+                  name="customMaxOccupancy"
+                  value={formData.customMaxOccupancy}
+                  onChange={handleNumberChange}
+                  min={formData.customMinOccupancy}
+                  className="border p-2 rounded w-20 dark:bg-[#1a1a1a] dark:border-[#333] dark:text-white"
+                />
+                <span>people</span>
+              </div>
+            ) : (
+              <Select
+                options={occupancyOptions}
+                value={occupancyOptions.find(
+                  (option) => option.value === formData.maxOccupancy
+                )}
+                onChange={(selected) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    maxOccupancy: selected ? selected.value : "",
+                  }))
+                }
+                className="text-sm"
+                classNamePrefix="react-select"
+                placeholder="Select occupancy range..."
+                isClearable
+                theme={(theme) => ({
+                  ...theme,
+                  colors: {
+                    ...theme.colors,
+                    primary: "#98002E",
+                    neutral0: isDark ? "#000000" : "#ffffff",
+                    neutral80: isDark ? "#ffffff" : "#000000",
+                    primary25: isDark ? "#111111" : "#f3f4f6",
+                    neutral20: isDark ? "#333333" : "#d1d5db",
+                  },
+                })}
+              />
+            )}
           </div>
 
           {/* Amenities Select */}

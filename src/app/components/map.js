@@ -224,6 +224,7 @@ const OpenLayersMap = () => {
             featuredReview: feature.get("featuredReview"),
             reviews: locationReviews,
             coordinates: lonLat,
+            maxOccupancy: feature.get("maxOccupancy"), // Add this line to include maxOccupancy
           });
           setShowSidebar(true);
           setActiveFeatureId(feature.getId());
@@ -282,6 +283,7 @@ const OpenLayersMap = () => {
           amenities: location.amenities,
           noiseLevel: location.noiseLevel,
           seating: location.seating,
+          maxOccupancy: location.maxOccupancy, // Add this line to include maxOccupancy
           featuredReview: location.featuredReview,
           active: false,
         });
