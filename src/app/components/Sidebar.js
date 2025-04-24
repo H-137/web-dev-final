@@ -14,6 +14,7 @@ import {
   FaChair,
   FaPrint,
   FaMarker,
+  FaUserFriends, // Added icon for occupancy
 } from "react-icons/fa";
 import { BsTable } from "react-icons/bs";
 import Image from "next/image";
@@ -188,6 +189,12 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
 
   if (!studySpace) return null;
 
+  // Format occupancy for display
+  const formatOccupancy = (occupancy) => {
+    if (!occupancy) return "Not specified";
+    return `${occupancy} people`;
+  };
+
   return (
     <div className="fixed top-0 right-0 w-1/2 md:w-2/5 lg:w-1/3 transition-all duration-300 ease-in-out bg-white dark:bg-black text-black dark:text-white p-6 box-border rounded-l-lg shadow-lg overflow-y-auto z-10 m-5 mb-0 max-h-[95vh] dark:border-[#333333] dark:border-2">
       <div className="flex justify-between items-center mb-0">
@@ -216,6 +223,34 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
           <p>{studySpace.description}</p>
         </div>
       )}
+
+      {/* Key Information Section */}
+      <div className="mb-6 mt-4 grid grid-cols-2 gap-4">
+        {/* Noise Level */}
+        {studySpace.noiseLevel && (
+          <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg flex flex-col items-center justify-center">
+            <span className="text-sm text-gray-500 dark:text-gray-400">Noise Level</span>
+            <span className="font-medium">{studySpace.noiseLevel}</span>
+          </div>
+        )}
+        
+        {/* Maximum Occupancy - with consistent coloring */}
+        <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg flex flex-col items-center justify-center">
+          <span className="text-sm text-gray-500 dark:text-gray-400">Max Occupancy</span>
+          <div className="flex items-center">
+            <FaUserFriends className="mr-2 text-gray-600 dark:text-gray-400" />
+            <span className="font-medium">{formatOccupancy(studySpace.maxOccupancy)}</span>
+          </div>
+        </div>
+        
+        {/* Seating Types if available */}
+        {studySpace.seating && (
+          <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg flex flex-col items-center justify-center col-span-2">
+            <span className="text-sm text-gray-500 dark:text-gray-400">Seating</span>
+            <span className="font-medium text-center">{studySpace.seating}</span>
+          </div>
+        )}
+      </div>
 
       <div className="flex flex-row justify-between mb-4 mt-4">
         <div className="flex flex-col">
