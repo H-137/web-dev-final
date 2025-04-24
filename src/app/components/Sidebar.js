@@ -199,13 +199,13 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
           <FaTimes size={20} className="text-black dark:text-white" />
         </button>
       </div>
-      {studySpace.description && (
+      {studySpace.description && studySpace.description != "N/A" && (
         <div className="text-gray-700 dark:text-gray-300 mb-4 mt-2">
           <p>{studySpace.description}</p>
         </div>
         )}
   
-      <div className="flex flex-row justify-between mb-4">
+      <div className="flex flex-row justify-between mb-4 mt-4">
         <div className="flex flex-col">
           <h3 className="text-lg font-semibold mb-2">Amenities</h3>
           <ul className="list-none space-y-2">
