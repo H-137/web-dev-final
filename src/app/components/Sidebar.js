@@ -255,7 +255,7 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
   
       <div className="mt-4">
         <h3 className="text-lg font-semibold mb-2">User Reviews</h3>
-        <div className="space-y-4 max-h-60 overflow-y-auto">
+        <div className="space-y-4">
           {studySpace.reviews?.length > 0 ? (
             studySpace.reviews.map((review) => (
               <div key={review.id} className="border-b border-gray-300 dark:border-gray-600 pb-4">
