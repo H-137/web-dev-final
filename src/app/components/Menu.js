@@ -35,8 +35,6 @@ function Menu({
     { value: "Cafeteria Nearby", label: "Cafeteria Nearby" },
     { value: "Desks", label: "Desks" },
     { value: "Tables", label: "Tables" },
-    { value: "Printer", label: "Printer" },
-    { value: "Whiteboard", label: "Whiteboard" },
   ];
 
   const [formData, setFormData] = useState({
@@ -83,21 +81,21 @@ function Menu({
   // Star Rating Component for Menu
   const StarRating = () => {
     const starRefs = useRef([]);
-    
-    // Use a global document event to listen for any mouse movement 
+
+    // Use a global document event to listen for any mouse movement
     // anywhere in the document to reset the hover state
     useEffect(() => {
       // A simple function to reset the hover rating
       const resetHoverRating = () => {
         setHoverRating(0);
       };
-      
+
       // Add mouseout event on document, which will trigger when mouse leaves any element
-      document.addEventListener('mouseout', resetHoverRating);
-      
+      document.addEventListener("mouseout", resetHoverRating);
+
       // Cleanup
       return () => {
-        document.removeEventListener('mouseout', resetHoverRating);
+        document.removeEventListener("mouseout", resetHoverRating);
       };
     }, []);
 
@@ -393,7 +391,7 @@ function Menu({
                 <p>{selectedFile.name}</p>
               </div>
             )}
-          </div> */}
+          </div> }
 
           <div className="mb-2">
             <label className="block text-sm font-medium mb-1">
@@ -444,6 +442,24 @@ function Menu({
                   neutral20: isDark ? "#333333" : "#d1d5db",
                 },
               })}
+              styles={{
+                multiValue: (base) => ({
+                  ...base,
+                  backgroundColor: isDark ? "#333" : "#e5e7eb", // darker for dark mode
+                }),
+                multiValueLabel: (base) => ({
+                  ...base,
+                  color: isDark ? "#fff" : "#000",
+                }),
+                multiValueRemove: (base) => ({
+                  ...base,
+                  color: isDark ? "#fff" : "#000",
+                  ":hover": {
+                    backgroundColor: isDark ? "#555" : "#cbd5e1",
+                    color: isDark ? "#fff" : "#000",
+                  },
+                }),
+              }}
             />
           </div>
 
@@ -509,6 +525,24 @@ function Menu({
                   neutral20: isDark ? "#333333" : "#d1d5db",
                 },
               })}
+              styles={{
+                multiValue: (base) => ({
+                  ...base,
+                  backgroundColor: isDark ? "#333" : "#e5e7eb",
+                }),
+                multiValueLabel: (base) => ({
+                  ...base,
+                  color: isDark ? "#fff" : "#000",
+                }),
+                multiValueRemove: (base) => ({
+                  ...base,
+                  color: isDark ? "#fff" : "#000",
+                  ":hover": {
+                    backgroundColor: isDark ? "#555" : "#cbd5e1",
+                    color: isDark ? "#fff" : "#000",
+                  },
+                }),
+              }}
             />
           </div>
 
