@@ -195,19 +195,13 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
           <FaTimes size={20} className="text-black dark:text-white" />
         </button>
       </div>
-  
-      {studySpace.image && (
-        <div className="relative w-full h-40 mb-4">
-          <Image
-            src={studySpace.image}
-            alt={studySpace.name}
-            fill
-            className="object-cover rounded-lg"
-          />
+      {studySpace.description && (
+        <div className="text-gray-700 dark:text-gray-300 mb-4 mt-2">
+          <p>{studySpace.description}</p>
         </div>
-      )}
+        )}
   
-      <div className="flex flex-row justify-between items-center mb-4">
+      <div className="flex flex-row justify-between mb-4">
         <div className="flex flex-col">
           <h3 className="text-lg font-semibold mb-2">Amenities</h3>
           <ul className="list-none space-y-2">
@@ -222,7 +216,7 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
           </ul>
         </div>
   
-        <div className="relative w-40 h-40 flex items-center justify-center">
+        <div className="relative w-40 h-30 flex items-center justify-center">
           <svg width="160" height="160" viewBox="0 0 160 160" className="absolute">
             <circle
               cx="80"
@@ -255,7 +249,7 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
         </div>
       </div>
   
-      <div className="mt-6">
+      <div className="mt-4">
         <h3 className="text-lg font-semibold mb-2">User Reviews</h3>
         <div className="space-y-4 max-h-60 overflow-y-auto">
           {studySpace.reviews?.length > 0 ? (
