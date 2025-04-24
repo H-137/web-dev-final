@@ -391,7 +391,7 @@ function Menu({
                 <p>{selectedFile.name}</p>
               </div>
             )}
-          </div> }
+          </div> */}
 
           <div className="mb-2">
             <label className="block text-sm font-medium mb-1">
