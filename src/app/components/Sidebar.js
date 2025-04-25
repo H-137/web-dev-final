@@ -189,8 +189,6 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
     return () => observer.disconnect();
   }, []);
 
-  if (!studySpace) return null;
-
   // Format occupancy for display
   const formatOccupancy = (occupancy) => {
     if (!occupancy) return "Not specified";
@@ -204,6 +202,8 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
     return () => clearTimeout(timer);
   }, []);
 
+  if (!studySpace) return null;
+  
   return (
     <div
   className={`fixed top-1/4 h-[71%] w-[98%] md:right-0 md:top-0 md:w-2/5 lg:w-1/3
