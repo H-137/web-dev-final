@@ -196,10 +196,10 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
   };
 
   return (
-    <div className="fixed top-0 right-0 w-1/2 md:w-2/5 lg:w-1/3 transition-all duration-300 ease-in-out bg-white dark:bg-black text-black dark:text-white p-6 box-border rounded-l-lg shadow-lg overflow-y-auto z-10 m-5 mb-0 max-h-[95vh] dark:border-[#333333] dark:border-2">
-      <div className="flex justify-between items-center mb-0">
-        <h2 className="text-4xl font-bold mb-0">{studySpace.name}</h2>
-        <div className="w-29 flex flex-row justify-end">
+    <div className="fixed top-1/2 h-[46%] w-[98%] md:right-0 md:top-0 md:w-2/5 lg:w-1/3 transition-all duration-300 ease-in-out bg-white dark:bg-black text-black dark:text-white p-6 box-border rounded-t-lg md:rounded-l-lg md:rounded-t-none shadow-lg overflow-y-auto z-10 m-5 mb-0 max-h-[95vh] h-1/2 md:h-auto dark:border-[#333333] dark:border-2 pt-0">
+      <div className="sticky top-0 flex justify-between items-center bg-white dark:bg-black z-20 p-2 pt-5">
+        <h2 className="text-2xl md:text-4xl font-bold mb-0">{studySpace.name}</h2>
+        <div className="flex flex-row justify-end">
           {studySpace.coordinates && (
             <a
               href={`https://www.google.com/maps?q=${studySpace.coordinates[1]},${studySpace.coordinates[0]}`}
@@ -277,7 +277,7 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
           </ul>
         </div>
 
-        <div className="relative w-[160px] h-[220px] flex flex-col items-center">
+        <div className="relative w-[160px] h-[180px] flex flex-col items-center">
           <h3 className="text-lg font-semibold mb">Rating</h3>
           <div className="relative w-[160px] h-[160px] flex items-center justify-center">
             <svg
