@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Select from "react-select";
+import Slider from "@mui/material/Slider";
 
 const FilterPanel = ({ filters, setFilters }) => {
   // Options for each filter category
@@ -82,14 +83,14 @@ const FilterPanel = ({ filters, setFilters }) => {
       const newRange = [...prevFilters.occupancyRange];
       const index = slider === "min" ? 0 : 1;
       newRange[index] = value;
-      
+
       // Ensure min doesn't exceed max and max doesn't go below min
       if (slider === "min" && value > newRange[1]) {
         newRange[1] = value;
       } else if (slider === "max" && value < newRange[0]) {
         newRange[0] = value;
       }
-      
+
       return {
         ...prevFilters,
         occupancyRange: newRange,
@@ -98,7 +99,7 @@ const FilterPanel = ({ filters, setFilters }) => {
   };
 
   return (
-    <div className="fixed top-4 left-20 md:left-32 lg:left-40 bg-white dark:bg-black text-black dark:text-white p-4 rounded-lg shadow-lg z-10 w-60 md:w-64 max-h-[90vh] overflow-y-auto dark:border-[#333333] dark:border-2">
+    <div className="fixed top-4 left-32 md:left-32 lg:left-32 bg-white dark:bg-black text-black dark:text-white p-4 rounded-lg shadow-lg z-10 w-60 md:w-64 overflow-y-auto dark:border-[#333333] dark:border-2">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-bold">Filter Study Spaces</h2>
         <button
@@ -108,56 +109,64 @@ const FilterPanel = ({ filters, setFilters }) => {
           Clear All
         </button>
       </div>
-  
+
       {/* Rating Slider */}
       <div className="mb-4">
         <label className="block text-sm font-medium mb-1">
           Minimum Rating: {filters.minRating}%
         </label>
-        <input
-          type="range"
-          min="0"
-          max="100"
+        <Slider
           value={filters.minRating}
-          onChange={(e) =>
+          onChange={(e, newValue) =>
             setFilters((prev) => ({
               ...prev,
-              minRating: parseInt(e.target.value),
+              minRating: newValue,
             }))
           }
-          className="w-full h-2 rounded-lg appearance-none bg-gray-300 dark:bg-[#1a1a1a] cursor-pointer accent-[#98002E]"
+          valueLabelDisplay="auto"
+          min={0}
+          max={100}
+          sx={{
+            color: "#98002E",
+            "& .MuiSlider-track": {
+              backgroundColor: "#98002E",
+            },
+            "& .MuiSlider-thumb": {
+              backgroundColor: "#98002E",
+            },
+          }}
         />
       </div>
-      
+
       {/* Occupancy Range Sliders */}
       <div className="mb-4">
         <label className="block text-sm font-medium mb-1">
-          Occupancy Range: {filters.occupancyRange[0]} - {filters.occupancyRange[1]} people
+          Occupancy Range: {filters.occupancyRange[0]} -{" "}
+          {filters.occupancyRange[1]} people
         </label>
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-xs">Min</span>
-          <input
-            type="range"
-            min="1"
-            max="100"
-            value={filters.occupancyRange[0]}
-            onChange={(e) => handleOccupancyChange(e, "min")}
-            className="flex-1 h-2 rounded-lg appearance-none bg-gray-300 dark:bg-[#1a1a1a] cursor-pointer accent-[#98002E]"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs">Max</span>
-          <input
-            type="range"
-            min="1"
-            max="100"
-            value={filters.occupancyRange[1]}
-            onChange={(e) => handleOccupancyChange(e, "max")}
-            className="flex-1 h-2 rounded-lg appearance-none bg-gray-300 dark:bg-[#1a1a1a] cursor-pointer accent-[#98002E]"
-          />
-        </div>
+        <Slider
+          value={filters.occupancyRange}
+          onChange={(e, newValue) =>
+            setFilters((prev) => ({
+              ...prev,
+              occupancyRange: newValue,
+            }))
+          }
+          valueLabelDisplay="auto"
+          min={1}
+          max={100}
+          sx={{
+            color: "#98002E",
+            "& .MuiSlider-track": {
+              backgroundColor: "#98002E",
+            },
+            "& .MuiSlider-thumb": {
+              backgroundColor: "#98002E",
+            },
+          }}
+        />
       </div>
-  
+
       {/* Noise Level Multiselect */}
       <div className="mb-4">
         <label className="block text-sm font-medium mb-1">Noise Level</label>
@@ -187,7 +196,7 @@ const FilterPanel = ({ filters, setFilters }) => {
           })}
         />
       </div>
-  
+
       {/* Seating Multiselect */}
       <div className="mb-4">
         <label className="block text-sm font-medium mb-1">Seating Type</label>
@@ -215,7 +224,7 @@ const FilterPanel = ({ filters, setFilters }) => {
           })}
         />
       </div>
-  
+
       {/* Amenities Checkboxes */}
       <div className="mb-2">
         <label className="block text-sm font-medium mb-1">Amenities</label>
@@ -227,7 +236,7 @@ const FilterPanel = ({ filters, setFilters }) => {
                 id={`amenity-${amenity.value}`}
                 checked={filters.amenities.includes(amenity.value)}
                 onChange={() => handleAmenityChange(amenity.value)}
-                className="h-4 w-4 rounded border-gray-300 dark:border-[#333333] dark:bg-[#1a1a1a] text-[#98002E] focus:ring-[#98002E]"
+                className="h-4 w-4 rounded border-gray-300 dark:border-[#333333] dark:bg-[#1a1a1a] text-[#98002E] focus:ring-[#98002E] accent-[#98002E] dark:focus:ring-[#98002E] dark:checked:bg-[#98002E] dark:checked:border-[#98002E] hover:cursor-pointer"
               />
               <label
                 htmlFor={`amenity-${amenity.value}`}
@@ -240,7 +249,7 @@ const FilterPanel = ({ filters, setFilters }) => {
         </div>
       </div>
     </div>
-  );  
+  );
 };
 
 export default FilterPanel;
