@@ -51,6 +51,7 @@ const OpenLayersMap = () => {
     amenities: [],
     noiseLevels: [],
     seating: [],
+    occupancyRange: [1, 100], // Added occupancy range filter
   });
   const [loading, setLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
@@ -106,6 +107,30 @@ const OpenLayersMap = () => {
   useEffect(() => {
     awaitingMapClickRef.current = awaitingMapClick;
   }, [awaitingMapClick]);
+
+  // Function to check if a location's occupancy falls within the filter range
+  const checkOccupancyRange = (locationOccupancy, minFilter, maxFilter) => {
+    // Handle empty or undefined values
+    if (!locationOccupancy) return true; // If no occupancy data, show location
+
+    // Handle preset ranges like "1-5", "5-10", etc.
+    if (locationOccupancy.includes('-')) {
+      const [minLoc, maxLoc] = locationOccupancy.split('-').map(num => {
+        // Handle the "50+" format
+        if (num.includes('+')) {
+          return parseInt(num.replace('+', ''));
+        }
+        return parseInt(num);
+      });
+      
+      // Check if there's any overlap between the ranges
+      return !(maxFilter < minLoc || minFilter > maxLoc);
+    }
+    
+    // Handle single number occupancy
+    const occupancy = parseInt(locationOccupancy);
+    return !isNaN(occupancy) && occupancy >= minFilter && occupancy <= maxFilter;
+  };
 
   // Calculate rating based on reviews
   const calculateAverageRating = (locationName) => {
@@ -224,7 +249,7 @@ const OpenLayersMap = () => {
             featuredReview: feature.get("featuredReview"),
             reviews: locationReviews,
             coordinates: lonLat,
-            maxOccupancy: feature.get("maxOccupancy"), // Add this line to include maxOccupancy
+            maxOccupancy: feature.get("maxOccupancy"), 
           });
           setShowSidebar(true);
           setActiveFeatureId(feature.getId());
@@ -250,6 +275,7 @@ const OpenLayersMap = () => {
           !filters.noiseLevels.includes(location.noiseLevel)
         )
           return false;
+
         const locationSeating = Array.isArray(location.seating)
           ? location.seating
           : location.seating
@@ -260,6 +286,7 @@ const OpenLayersMap = () => {
           !filters.seating.some((seat) => locationSeating.includes(seat))
         )
           return false;
+
         const locationAmenities = location.amenities.map((a) => a.name);
         if (
           filters.amenities.length > 0 &&
@@ -268,6 +295,15 @@ const OpenLayersMap = () => {
           )
         )
           return false;
+
+        // Check occupancy range
+        if (!checkOccupancyRange(
+          location.maxOccupancy,
+          filters.occupancyRange[0],
+          filters.occupancyRange[1]
+        ))
+          return false;
+
         return true;
       })
       .map((location) => {
@@ -283,7 +319,7 @@ const OpenLayersMap = () => {
           amenities: location.amenities,
           noiseLevel: location.noiseLevel,
           seating: location.seating,
-          maxOccupancy: location.maxOccupancy, // Add this line to include maxOccupancy
+          maxOccupancy: location.maxOccupancy,
           featuredReview: location.featuredReview,
           active: false,
         });

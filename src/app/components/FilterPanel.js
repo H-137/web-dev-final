@@ -1,6 +1,5 @@
-import react from "react";
-import Select from "react-select";
 import { useEffect, useState } from "react";
+import Select from "react-select";
 
 const FilterPanel = ({ filters, setFilters }) => {
   // Options for each filter category
@@ -15,6 +14,7 @@ const FilterPanel = ({ filters, setFilters }) => {
     { value: "Desk Chairs", label: "Desk Chairs" },
     { value: "Cushioned Chairs", label: "Cushioned Chairs" },
     { value: "Couches", label: "Couches" },
+    { value: "Booths", label: "Booths" },
   ];
 
   const [isDark, setIsDark] = useState(false);
@@ -41,6 +41,8 @@ const FilterPanel = ({ filters, setFilters }) => {
     { value: "Conference Rooms", label: "Conference Rooms" },
     { value: "Cafeteria Nearby", label: "Cafeteria Nearby" },
     { value: "Whiteboards", label: "Whiteboards" },
+    { value: "Desks", label: "Desks" },
+    { value: "Tables", label: "Tables" },
   ];
 
   const handleAmenityChange = (amenityValue) => {
@@ -69,11 +71,34 @@ const FilterPanel = ({ filters, setFilters }) => {
       noiseLevels: [],
       seating: [],
       amenities: [],
+      occupancyRange: [1, 100], // Reset occupancy range
+    });
+  };
+
+  // Handle occupancy slider change
+  const handleOccupancyChange = (e, slider) => {
+    const value = parseInt(e.target.value);
+    setFilters((prevFilters) => {
+      const newRange = [...prevFilters.occupancyRange];
+      const index = slider === "min" ? 0 : 1;
+      newRange[index] = value;
+      
+      // Ensure min doesn't exceed max and max doesn't go below min
+      if (slider === "min" && value > newRange[1]) {
+        newRange[1] = value;
+      } else if (slider === "max" && value < newRange[0]) {
+        newRange[0] = value;
+      }
+      
+      return {
+        ...prevFilters,
+        occupancyRange: newRange,
+      };
     });
   };
 
   return (
-    <div className="absolute top-4 left-32 bg-white dark:bg-black text-black dark:text-white p-4 rounded-lg shadow-lg z-10 w-64 dark:border-[#333333] dark:border-2">
+    <div className="fixed top-4 left-20 md:left-32 lg:left-40 bg-white dark:bg-black text-black dark:text-white p-4 rounded-lg shadow-lg z-10 w-60 md:w-64 max-h-[90vh] overflow-y-auto dark:border-[#333333] dark:border-2">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-bold">Filter Study Spaces</h2>
         <button
@@ -102,6 +127,35 @@ const FilterPanel = ({ filters, setFilters }) => {
           }
           className="w-full h-2 rounded-lg appearance-none bg-gray-300 dark:bg-[#1a1a1a] cursor-pointer accent-[#98002E]"
         />
+      </div>
+      
+      {/* Occupancy Range Sliders */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1">
+          Occupancy Range: {filters.occupancyRange[0]} - {filters.occupancyRange[1]} people
+        </label>
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-xs">Min</span>
+          <input
+            type="range"
+            min="1"
+            max="100"
+            value={filters.occupancyRange[0]}
+            onChange={(e) => handleOccupancyChange(e, "min")}
+            className="flex-1 h-2 rounded-lg appearance-none bg-gray-300 dark:bg-[#1a1a1a] cursor-pointer accent-[#98002E]"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs">Max</span>
+          <input
+            type="range"
+            min="1"
+            max="100"
+            value={filters.occupancyRange[1]}
+            onChange={(e) => handleOccupancyChange(e, "max")}
+            className="flex-1 h-2 rounded-lg appearance-none bg-gray-300 dark:bg-[#1a1a1a] cursor-pointer accent-[#98002E]"
+          />
+        </div>
       </div>
   
       {/* Noise Level Multiselect */}
