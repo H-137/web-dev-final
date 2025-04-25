@@ -312,12 +312,12 @@ function Menu({
 
   return (
     <div className="fixed top-0 left-0 w-full h-full bg-gray-500/30 flex items-center justify-center z-50 p-4 ">
-      <div className="w-full max-w-lg bg-white dark:bg-black text-black dark:text-white p-4 md:p-6 rounded-lg shadow-lg overflow-y-auto max-h-[90vh] z-10 dark:border-[#333333] dark:border-2">
-        <div className="flex justify-between items-center mb-4">
+       <div className="w-full max-w-lg bg-white dark:bg-black text-black dark:text-white pt-0 px-4 pb-4 md:px-6 md:pb-6 rounded-lg shadow-lg overflow-y-auto max-h-[90vh] z-10 dark:border-[#333333] dark:border-2">
+        <div className="sticky top-0 z-10 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 p-3 flex justify-between items-center mb-2">
           <h2 className="text-xl md:text-2xl font-bold mb-0">Add Location</h2>
           <button
             onClick={onClose}
-            className="text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#111111] transition duration-200 ease-in-out mb-1 p-1 rounded-md"
+            className="text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#111111] transition duration-200 ease-in-out p-1 rounded-md"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
