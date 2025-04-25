@@ -229,25 +229,35 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
         {/* Noise Level */}
         {studySpace.noiseLevel && (
           <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg flex flex-col items-center justify-center">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Noise Level</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              Noise Level
+            </span>
             <span className="font-medium">{studySpace.noiseLevel}</span>
           </div>
         )}
-        
+
         {/* Maximum Occupancy - with consistent coloring */}
         <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg flex flex-col items-center justify-center">
-          <span className="text-sm text-gray-500 dark:text-gray-400">Max Occupancy</span>
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            Max Occupancy
+          </span>
           <div className="flex items-center">
             <FaUserFriends className="mr-2 text-gray-600 dark:text-gray-400" />
-            <span className="font-medium">{formatOccupancy(studySpace.maxOccupancy)}</span>
+            <span className="font-medium">
+              {formatOccupancy(studySpace.maxOccupancy)}
+            </span>
           </div>
         </div>
-        
+
         {/* Seating Types if available */}
         {studySpace.seating && (
           <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg flex flex-col items-center justify-center col-span-2">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Seating</span>
-            <span className="font-medium text-center">{studySpace.seating}</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              Seating
+            </span>
+            <span className="font-medium text-center">
+              {studySpace.seating}
+            </span>
           </div>
         )}
       </div>
@@ -267,41 +277,46 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
           </ul>
         </div>
 
-        <div className="relative w-40 h-30 flex items-center justify-center">
-          <svg
-            width="160"
-            height="160"
-            viewBox="0 0 160 160"
-            className="absolute"
-          >
-            <circle
-              cx="80"
-              cy="80"
-              r="60"
-              fill="transparent"
-              stroke={isDark ? "#333333" : "#E5E7EB"}
-              strokeWidth="12"
-              strokeDasharray="282.743 376.991"
-              strokeDashoffset="0"
-              strokeLinecap="round"
-              transform="rotate(135,80,80)"
-            />
-            <circle
-              cx="80"
-              cy="80"
-              r="60"
-              fill="transparent"
-              stroke="#98002E"
-              strokeWidth="12"
-              strokeDasharray="282.743 376.991"
-              strokeDashoffset={282.743 * (1 - studySpace.generalRating / 100)}
-              strokeLinecap="round"
-              transform="rotate(135,80,80)"
-            />
-          </svg>
-          <span className="absolute text-4xl font-bold text-black dark:text-white">
-            {studySpace.generalRating}
-          </span>
+        <div className="relative w-[160px] h-[220px] flex flex-col items-center">
+          <h3 className="text-lg font-semibold mb">Rating</h3>
+          <div className="relative w-[160px] h-[160px] flex items-center justify-center">
+            <svg
+              width="160"
+              height="160"
+              viewBox="0 0 160 160"
+              className="absolute"
+            >
+              <circle
+                cx="80"
+                cy="80"
+                r="60"
+                fill="transparent"
+                stroke={isDark ? "#333333" : "#E5E7EB"}
+                strokeWidth="12"
+                strokeDasharray="282.743 376.991"
+                strokeDashoffset="0"
+                strokeLinecap="round"
+                transform="rotate(135,80,80)"
+              />
+              <circle
+                cx="80"
+                cy="80"
+                r="60"
+                fill="transparent"
+                stroke="#98002E"
+                strokeWidth="12"
+                strokeDasharray="282.743 376.991"
+                strokeDashoffset={
+                  282.743 * (1 - studySpace.generalRating / 100)
+                }
+                strokeLinecap="round"
+                transform="rotate(135,80,80)"
+              />
+            </svg>
+            <span className="absolute text-4xl font-bold text-black dark:text-white">
+              {studySpace.generalRating}
+            </span>
+          </div>
         </div>
       </div>
 
