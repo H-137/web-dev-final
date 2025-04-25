@@ -40,6 +40,8 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
   const [reviewText, setReviewText] = useState("");
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -195,10 +197,26 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
     return `${occupancy} people`;
   };
 
+  useEffect(() => {
+    // Allow a tiny delay so Tailwind transition can actually animate
+    const timer = setTimeout(() => setIsVisible(true), 50);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <div className="fixed top-1/2 h-[46%] w-[98%] md:right-0 md:top-0 md:w-2/5 lg:w-1/3 transition-all duration-300 ease-in-out bg-white dark:bg-black text-black dark:text-white p-6 box-border rounded-t-lg md:rounded-l-lg md:rounded-t-none shadow-lg overflow-y-auto z-10 m-5 mb-0 max-h-[95vh] h-1/2 md:h-auto dark:border-[#333333] dark:border-2 pt-0">
+    <div
+  className={`fixed top-1/4 h-[71%] w-[98%] md:right-0 md:top-0 md:w-2/5 lg:w-1/3
+    transition-transform duration-500 ease-in-out
+    ${isVisible ? "translate-y-0 md:translate-x-0 md:translate-y-0" : "translate-y-full md:translate-x-full md:translate-y-0"}
+    bg-white dark:bg-black text-black dark:text-white p-6 box-border rounded-lg shadow-lg overflow-y-auto
+
+    z-10 m-5 mb-0 max-h-[95vh] h-1/2 md:h-auto dark:border-[#333333] dark:border-2 pt-0 md:mr-2`}>
+
       <div className="sticky top-0 flex justify-between items-center bg-white dark:bg-black z-20 p-2 pt-5">
-        <h2 className="text-2xl md:text-4xl font-bold mb-0">{studySpace.name}</h2>
+        <h2 className="text-3xl md:text-4xl font-bold mb-0">
+          {studySpace.name}
+        </h2>
         <div className="flex flex-row justify-end">
           {studySpace.coordinates && (
             <a
@@ -211,7 +229,12 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
             </a>
           )}
           <button
-            onClick={onClose}
+            onClick={() => {
+              setIsVisible(false); // Start slide-out animation
+              setTimeout(() => {
+                onClose(); // After animation ends, actually close
+              }, 500); // Match the transition duration
+            }}
             className="text-gray-600 dark:text-gray-300 float-right hover:bg-gray-100 dark:hover:bg-[#111] transition duration-200 ease-in-out mb-1 p-1 rounded-md"
           >
             <FaTimes size={20} className="text-black dark:text-white" />
