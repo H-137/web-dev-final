@@ -16,7 +16,6 @@ import ZoomControls from "./Zoom";
 import Menu from "./Menu";
 import { toLonLat } from "ol/proj";
 
-
 const styles = {
   active: new Style({
     image: new Icon({ anchor: [0.5, 1], src: "/marker_red.svg", scale: 0.06 }),
@@ -51,20 +50,27 @@ const OpenLayersMap = () => {
     amenities: [],
     noiseLevels: [],
     seating: [],
-    occupancyRange: [1, 100], // Added occupancy range filter
+    occupancyRange: [1, 100],
   });
   const [loading, setLoading] = useState(true);
+  const [showLoadingScreen, setShowLoadingScreen] = useState(true); // NEW
   const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("darkMode");
-
-    // Only enable dark mode if user explicitly set it
     const enabled = saved === "true";
-
     setDarkMode(enabled);
     document.documentElement.classList.toggle("dark", enabled);
   }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      const timeout = setTimeout(() => {
+        setShowLoadingScreen(false);
+      }, 1000); // match transition duration
+      return () => clearTimeout(timeout);
+    }
+  }, [loading]);
 
   const toggleDarkMode = () => {
     setDarkMode((prev) => {
@@ -95,7 +101,6 @@ const OpenLayersMap = () => {
 
   useEffect(() => {
     if (!mapInstance.current) return;
-
     lightBaseLayerRef.current.setVisible(!darkMode);
     darkBaseLayerRef.current.setVisible(darkMode);
   }, [darkMode]);
@@ -108,40 +113,24 @@ const OpenLayersMap = () => {
     awaitingMapClickRef.current = awaitingMapClick;
   }, [awaitingMapClick]);
 
-  // Function to check if a location's occupancy falls within the filter range
   const checkOccupancyRange = (locationOccupancy, minFilter, maxFilter) => {
-    // Handle empty or undefined values
-    if (!locationOccupancy) return true; // If no occupancy data, show location
-
-    // Handle preset ranges like "1-5", "5-10", etc.
-    if (locationOccupancy.includes('-')) {
-      const [minLoc, maxLoc] = locationOccupancy.split('-').map(num => {
-        // Handle the "50+" format
-        if (num.includes('+')) {
-          return parseInt(num.replace('+', ''));
-        }
+    if (!locationOccupancy) return true;
+    if (locationOccupancy.includes("-")) {
+      const [minLoc, maxLoc] = locationOccupancy.split("-").map(num => {
+        if (num.includes("+")) return parseInt(num.replace("+", ""));
         return parseInt(num);
       });
-      
-      // Check if there's any overlap between the ranges
       return !(maxFilter < minLoc || minFilter > maxLoc);
     }
-    
-    // Handle single number occupancy
     const occupancy = parseInt(locationOccupancy);
     return !isNaN(occupancy) && occupancy >= minFilter && occupancy <= maxFilter;
   };
 
-  // Calculate rating based on reviews
   const calculateAverageRating = (locationName) => {
     const reviews = reviewsRef.current[locationName] || [];
     if (reviews.length === 0) return 0;
-
     const sum = reviews.reduce((total, review) => total + review.rating, 0);
-    const average = sum / reviews.length;
-
-    // Convert from 5-star scale to 100-point scale
-    return Math.round(average * 20);
+    return Math.round((sum / reviews.length) * 20);
   };
 
   useEffect(() => {
@@ -159,23 +148,16 @@ const OpenLayersMap = () => {
           acc[loc].push(review);
           return acc;
         }, {});
-
-        // Update locations with calculated ratings
         const updatedLocations = locations.map((location) => {
           const locationReviews = groupedReviews[location.name] || [];
-          const hasReviews = locationReviews.length > 0;
-
-          if (hasReviews) {
+          if (locationReviews.length > 0) {
             const sum = locationReviews.reduce(
               (total, review) => total + review.rating,
               0
             );
             const average = sum / locationReviews.length;
-            // Convert from 5-star scale to 100-point scale
-            const rating = Math.round(average * 20);
-            return { ...location, generalRating: rating };
+            return { ...location, generalRating: Math.round(average * 20) };
           }
-
           return location;
         });
 
@@ -213,7 +195,6 @@ const OpenLayersMap = () => {
           setShowMenu(true);
           return;
         }
-
         const feature = mapInstance.current.forEachFeatureAtPixel(
           event.pixel,
           (feat) => feat
@@ -231,10 +212,7 @@ const OpenLayersMap = () => {
         if (isActive) {
           const locationName = feature.get("name");
           const locationReviews = reviewsRef.current[locationName] || [];
-
-          // Calculate current rating based on reviews
           const calculatedRating = calculateAverageRating(locationName);
-
           const rawCoordinates = feature.getGeometry().getCoordinates();
           const lonLat = toLonLat(rawCoordinates);
 
@@ -249,7 +227,7 @@ const OpenLayersMap = () => {
             featuredReview: feature.get("featuredReview"),
             reviews: locationReviews,
             coordinates: lonLat,
-            maxOccupancy: feature.get("maxOccupancy"), 
+            maxOccupancy: feature.get("maxOccupancy"),
           });
           setShowSidebar(true);
           setActiveFeatureId(feature.getId());
@@ -266,7 +244,6 @@ const OpenLayersMap = () => {
     vectorSourceRef.current.clear();
     const newFeatures = locationsData.locations
       .filter((location) => {
-        // Update filtering to use calculated ratings
         const locationRating = calculateAverageRating(location.name);
         if (locationRating < filters.minRating) return false;
 
@@ -279,8 +256,8 @@ const OpenLayersMap = () => {
         const locationSeating = Array.isArray(location.seating)
           ? location.seating
           : location.seating
-            ? location.seating.split(", ")
-            : [];
+          ? location.seating.split(", ")
+          : [];
         if (
           filters.seating.length > 0 &&
           !filters.seating.some((seat) => locationSeating.includes(seat))
@@ -296,18 +273,18 @@ const OpenLayersMap = () => {
         )
           return false;
 
-        // Check occupancy range
-        if (!checkOccupancyRange(
-          location.maxOccupancy,
-          filters.occupancyRange[0],
-          filters.occupancyRange[1]
-        ))
+        if (
+          !checkOccupancyRange(
+            location.maxOccupancy,
+            filters.occupancyRange[0],
+            filters.occupancyRange[1]
+          )
+        )
           return false;
 
         return true;
       })
       .map((location) => {
-        // Calculate current rating based on reviews for each feature
         const calculatedRating = calculateAverageRating(location.name);
 
         const feature = new Feature({
@@ -339,7 +316,6 @@ const OpenLayersMap = () => {
       date: new Date().toISOString(),
     };
 
-    // Update reviews data
     const updatedReviews = {
       ...reviewsRef.current,
       [locationName]: [
@@ -349,10 +325,8 @@ const OpenLayersMap = () => {
     };
     setReviewsData(updatedReviews);
 
-    // Calculate new rating
     const newRating = calculateAverageRating(locationName);
 
-    // Update selected space if it's currently shown
     if (selectedSpace && selectedSpace.name === locationName) {
       setSelectedSpace((prev) => ({
         ...prev,
@@ -361,7 +335,6 @@ const OpenLayersMap = () => {
       }));
     }
 
-    // Update the location data with the new rating
     setLocationsData((prev) => {
       if (!prev) return prev;
       return {
@@ -399,13 +372,11 @@ const OpenLayersMap = () => {
   };
 
   const handleAddLocation = (newLocation) => {
-    // Add the new location
     setLocationsData((prev) => ({
       ...prev,
       locations: [...prev.locations, newLocation],
     }));
 
-    // Add the initial review to the reviews data
     if (newLocation.reviews && newLocation.reviews.length > 0) {
       const initialReview = newLocation.reviews[0];
       setReviewsData((prev) => ({
@@ -416,15 +387,14 @@ const OpenLayersMap = () => {
   };
 
   const handleMapPickMode = () => {
-    console.log("Setting awaitingMapClick to true");
     setAwaitingMapClick(true);
   };
 
   return (
     <>
-      {loading && (
-        <div className="fixed inset-0 bg-white dark:bg-black z-[1000] flex items-center justify-center text-black dark:text-white transition-opacity duration-300">
-          <span className="text-2xl font-bold">Loading...</span>
+      {showLoadingScreen && (
+        <div className={`fixed inset-0 bg-white dark:bg-black z-[1000] flex items-center justify-center text-black dark:text-white transition-opacity duration-1000 ${loading ? "opacity-100" : "opacity-0"}`}>
+          <span className="text-2xl font-bold">Loading... </span>
         </div>
       )}
 
