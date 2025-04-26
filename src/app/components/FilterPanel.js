@@ -99,8 +99,8 @@ const FilterPanel = ({ filters, setFilters }) => {
   };
 
   return (
-    <div className="fixed top-4 left-32 md:left-32 lg:left-32 bg-white dark:bg-black text-black dark:text-white p-4 rounded-lg shadow-lg z-10 w-60 md:w-64 overflow-y-auto dark:border-[#333333] dark:border-2">
-      <div className="flex justify-between items-center mb-4">
+    <div className="fixed top-4 left-32 md:left-32 lg:left-32 bg-white dark:bg-black text-black dark:text-white p-4 rounded-lg shadow-lg z-10 w-60 md:w-64 max-h-[calc(100vh-2rem)] overflow-y-auto dark:border-[#333333] dark:border-2">
+      <div className="flex justify-between items-center mb-4 sticky top-0 bg-white dark:bg-black pt-1 pb-2 z-10">
         <h2 className="text-lg font-bold">Filter Study Spaces</h2>
         <button
           onClick={handleClearAllFilters}
@@ -228,7 +228,7 @@ const FilterPanel = ({ filters, setFilters }) => {
       {/* Amenities Checkboxes */}
       <div className="mb-2">
         <label className="block text-sm font-medium mb-1">Amenities</label>
-        <div className="space-y-2 max-h-60 overflow-y-auto">
+        <div className="space-y-2 max-h-44 overflow-y-auto rounded border border-gray-200 dark:border-[#333333] p-2">
           {amenitiesOptions.map((amenity) => (
             <div key={amenity.value} className="flex items-center">
               <input
