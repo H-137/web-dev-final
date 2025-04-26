@@ -310,6 +310,34 @@ function Menu({
 
   const [previewUrl, setPreviewUrl] = useState(null);
 
+  // Custom styles for the Select components
+  const customSelectStyles = {
+    menu: (provided) => ({
+      ...provided,
+      maxHeight: '180px',  // Limit the dropdown height
+    }),
+    menuList: (provided) => ({
+      ...provided,
+      maxHeight: '180px', // Limit the list height
+    }),
+    multiValue: (base) => ({
+      ...base,
+      backgroundColor: isDark ? "#333" : "#e5e7eb",
+    }),
+    multiValueLabel: (base) => ({
+      ...base,
+      color: isDark ? "#fff" : "#000",
+    }),
+    multiValueRemove: (base) => ({
+      ...base,
+      color: isDark ? "#fff" : "#000",
+      ":hover": {
+        backgroundColor: isDark ? "#555" : "#cbd5e1",
+        color: isDark ? "#fff" : "#000",
+      },
+    }),
+  };
+
   return (
     <div className="fixed top-0 left-0 w-full h-full bg-gray-500/30 flex items-center justify-center z-50 p-4 ">
        <div className="w-full max-w-lg bg-white dark:bg-black text-black dark:text-white pt-0 px-4 pb-4 md:px-6 md:pb-6 rounded-lg shadow-lg overflow-y-auto max-h-[90vh] z-10 dark:border-[#333333] dark:border-2">
@@ -442,6 +470,7 @@ function Menu({
                 classNamePrefix="react-select"
                 placeholder="Select occupancy range..."
                 isClearable
+                styles={customSelectStyles}
                 theme={(theme) => ({
                   ...theme,
                   colors: {
@@ -472,6 +501,7 @@ function Menu({
               className="text-sm"
               classNamePrefix="react-select"
               placeholder="Select amenities..."
+              styles={customSelectStyles}
               theme={(theme) => ({
                 ...theme,
                 colors: {
@@ -483,24 +513,6 @@ function Menu({
                   neutral20: isDark ? "#333333" : "#d1d5db",
                 },
               })}
-              styles={{
-                multiValue: (base) => ({
-                  ...base,
-                  backgroundColor: isDark ? "#333" : "#e5e7eb", // darker for dark mode
-                }),
-                multiValueLabel: (base) => ({
-                  ...base,
-                  color: isDark ? "#fff" : "#000",
-                }),
-                multiValueRemove: (base) => ({
-                  ...base,
-                  color: isDark ? "#fff" : "#000",
-                  ":hover": {
-                    backgroundColor: isDark ? "#555" : "#cbd5e1",
-                    color: isDark ? "#fff" : "#000",
-                  },
-                }),
-              }}
             />
           </div>
 
@@ -524,6 +536,7 @@ function Menu({
               classNamePrefix="react-select"
               placeholder="Select noise level..."
               isClearable
+              styles={customSelectStyles}
               theme={(theme) => ({
                 ...theme,
                 colors: {
@@ -555,6 +568,7 @@ function Menu({
               className="text-sm"
               classNamePrefix="react-select"
               placeholder="Select seating types..."
+              styles={customSelectStyles}
               theme={(theme) => ({
                 ...theme,
                 colors: {
@@ -566,24 +580,6 @@ function Menu({
                   neutral20: isDark ? "#333333" : "#d1d5db",
                 },
               })}
-              styles={{
-                multiValue: (base) => ({
-                  ...base,
-                  backgroundColor: isDark ? "#333" : "#e5e7eb",
-                }),
-                multiValueLabel: (base) => ({
-                  ...base,
-                  color: isDark ? "#fff" : "#000",
-                }),
-                multiValueRemove: (base) => ({
-                  ...base,
-                  color: isDark ? "#fff" : "#000",
-                  ":hover": {
-                    backgroundColor: isDark ? "#555" : "#cbd5e1",
-                    color: isDark ? "#fff" : "#000",
-                  },
-                }),
-              }}
             />
           </div>
 
