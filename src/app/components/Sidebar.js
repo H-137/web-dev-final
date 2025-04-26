@@ -213,7 +213,7 @@ const Sidebar = ({ studySpace, onClose, onAddReview }) => {
 
     z-10 m-5 mb-0 max-h-[95vh] h-1/2 md:h-auto dark:border-[#333333] dark:border-2 pt-0 md:mr-2`}>
 
-      <div className="sticky top-0 flex justify-between items-center bg-white dark:bg-black z-20 p-2 pt-5">
+      <div className="sticky top-0 flex justify-between items-center bg-white dark:bg-black z-20 p-2 pt-5 border-b border-gray-200 dark:border-gray-800">
         <h2 className="text-3xl md:text-4xl font-bold mb-0">
           {studySpace.name}
         </h2>
