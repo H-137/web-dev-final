@@ -46,7 +46,8 @@ function Menu({
     { value: "10-20", label: "10-20 people" },
     { value: "20-30", label: "20-30 people" },
     { value: "30-50", label: "30-50 people" },
-    { value: "50+", label: "50+ people" },
+    { value: "50-100", label: "50-100 people" },
+    { value: "100+", label: "100+ people" },
   ];
 
   const [formData, setFormData] = useState({
