@@ -55,7 +55,7 @@ body {
   border-right: 2px solid currentColor;
   padding-right: 2px;
   white-space: nowrap;
-  animation: blinkCursor 0.75s steps(0) infinite;
+  animation: blinkCursor 0.75s steps(1) infinite;
 }
 
 @keyframes blinkCursor {
