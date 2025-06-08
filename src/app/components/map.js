@@ -393,8 +393,8 @@ const OpenLayersMap = () => {
   return (
     <>
       {showLoadingScreen && (
-        <div className={`fixed inset-0 bg-white dark:bg-black z-[1000] flex items-center justify-center text-black dark:text-white transition-opacity duration-1000 ${loading ? "opacity-100" : "opacity-0"}`}>
-          <span className="text-2xl font-bold">Loading... </span>
+        <div className={`fixed inset-0 bg-white dark:bg-black z-1000 flex items-center justify-center text-black dark:text-white transition-opacity duration-1000 ${loading ? "opacity-100" : "opacity-0"}`}>
+          <span className="text-2xl">Loading... </span>
         </div>
       )}
 

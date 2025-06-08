@@ -34,3 +34,36 @@ body {
 .custom-zoom-in, .custom-zoom-out {
   @apply bg-white p-2 w-[44px] rounded-full shadow-lg z-10 hover:bg-gray-100 transition-colors text-black flex items-center justify-center w-10 h-10;
 }
+
+@keyframes typewriter {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes blink {
+  50% {
+    border-color: transparent;
+  }
+}
+
+.typewriter {
+  display: inline-block;
+  border-right: 2px solid currentColor;
+  padding-right: 2px;
+  white-space: nowrap;
+  animation: blinkCursor 0.75s steps(0) infinite;
+}
+
+@keyframes blinkCursor {
+  0%, 100% {
+    border-color: currentColor;
+  }
+  50% {
+    border-color: transparent;
+  }
+}
+
